@@ -1,8 +1,7 @@
-# main
 from tkmacosx import Button
 import tkinter as tk
+import mazeSetup as ms
 
-# Create the main window
 root = tk.Tk()
 root.title("Maze Solver Login")
 
@@ -11,12 +10,10 @@ root.geometry("1200x840")  # Adjust the window size as needed
 root.resizable(False, False)  # Disable resizing
 root.configure(bg="#8AB0AB")  # Declare bg as 8AB0AB in global
 
-# Title label
 title_label = tk.Label(root, text="MAZE SOLVER", font=("Inter", 55, 'bold'), fg="black", )
 title_label.pack(pady=35)
 title_label.configure(bg=root.cget('bg'))
 
-# Load the image (replace 'maze_solve.png' with your image file)
 image = tk.PhotoImage(file='../image/maze_solve.png')
 
 # Resize the image using subsample
@@ -27,9 +24,10 @@ image_label = tk.Label(root, image=image)
 image_label.pack()
 image_label.configure(bg=root.cget('bg'))
 
-# Function to handle button click
 def start_solver(rows, columns):
-    print(f"Selected maze size: {rows}x{columns}")
+    root.destroy()  # Close the current window
+    ms.create_maze(rows, columns)  # Create the maze setup page
+
 
 # Styling for buttons
 button_style = {
@@ -42,7 +40,6 @@ button_style = {
     'borderless': 1,
 }
 
-# Buttons
 button_frame = tk.Frame(root)
 button_frame.pack(pady=40)
 button_frame.configure(bg=root.cget('bg'))
@@ -58,5 +55,4 @@ btn_8x8.pack(side="left", padx=20)
 btn_10x10.pack(side="left", padx=20)
 btn_12x12.pack(side="left", padx=20)
 
-# Start the Tkinter main loop
 root.mainloop()
