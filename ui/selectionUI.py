@@ -48,7 +48,7 @@ button_width = 280
 button_height = 80
 
 btn_8x8 = Button(button_frame, text="8x8", command=lambda: start_solver(8, 8),**button_style , width=button_width, height=button_height)
-btn_10x10 = Button(button_frame, text="10x10", command=lambda: start_solver(10, 20), **button_style,width=button_width, height= button_height)
+btn_10x10 = Button(button_frame, text="10x10", command=lambda: start_solver(10, 10), **button_style,width=button_width, height= button_height)
 btn_12x12 = Button(button_frame, text="12x12", command=lambda: start_solver(12, 12), **button_style, width=button_width, height=button_height)
 
 btn_8x8.pack(side="left", padx=20)
