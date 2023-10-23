@@ -150,23 +150,26 @@ def create_maze(row, column):
     maze_root.configure(bg="#8AB0AB")  # Declare bg as 8AB0AB in global
 
     def go_back():
-        global maze_root, start_placed, end_placed, start_mode, end_mode, clicked_lines
+        global maze_root, start_placed, end_placed, start_mode, end_mode, clicked_lines, walls
         maze_root.destroy()
         start_placed = False
         end_placed = False
         start_mode = False
         end_mode = False
         clicked_lines = []
+        walls = set()
         selection.create_selection()
 
     def clear():
-        global clicked_lines, start_position, end_position, start_mode, end_mode, clicked_lines
+        global clicked_lines, start_position, end_position, start_mode, end_mode, clicked_lines, walls
         clicked_lines = []
         start_position = None
         end_position = None
         start_mode = False
         end_mode = False
         clicked_lines = []
+        walls = set()
+
 
         global maze_root, start_placed, end_placed
         maze_root.destroy()
@@ -181,10 +184,6 @@ def create_maze(row, column):
     def solve_maze():
         global start_position, end_position, rows, columns, clicked_lines
         path = astar(grid, start_position, end_position, walls)
-        print(f"Path from {start_position} to {end_position}: {path}")
-        print(start_position)
-        print(end_position)
-        print(clicked_lines)
 
     button_width = 80
     button_height = 30
