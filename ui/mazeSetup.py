@@ -75,7 +75,6 @@ def heuristic(node, goal):
 def on_line_click(tag, event):
     side, i, j = tag.split("_")
     i, j = int(i), int(j)
-    print(f"{i},{j},{side}")
 
     line = event.widget
     x, y = event.x, event.y
@@ -85,8 +84,10 @@ def on_line_click(tag, event):
 
     if line_color == "#CCCCCC":
         line.itemconfig(item, fill="red")
-        # add the wall to the walls list
-        if side == "top" or side == "left":
+        # if walls already has the wall, don't add it
+        if (i, j) in walls:
+            return
+        elif side == "top" or side == "left":
             walls.add((i, j))
         elif side == "right":
             walls.add((i, j + 1))
@@ -95,8 +96,10 @@ def on_line_click(tag, event):
 
     else:
         line.itemconfig(item, fill="#CCCCCC")
-        # remove the wall from the walls list
-        if side == "top" or side == "left":
+        # if walls doesn't have the wall, don't remove it
+        if (i, j) not in walls:
+            return
+        elif side == "top" or side == "left":
             walls.remove((i, j))
         elif side == "right":
             walls.remove((i, j + 1))
@@ -122,8 +125,7 @@ def place_end():
 
 
 def on_cell_click(event):
-    global start_mode, end_mode, start_position, end_position
-    global canvas
+    global start_mode, end_mode, start_position, end_position, canvas
     x_center = (event.x // (868 // columns)) * (868 // columns) + (868 // (2 * columns))
     if start_mode:
         # Calculate the center of the cell
@@ -171,7 +173,10 @@ def clear():
 def solve_maze():
     global start_position, end_position, rows, columns
     grid = create_grid()
+    if start_position is None or end_position is None:
+        return
     path = astar(grid, start_position, end_position)
+    print(walls)
     if path is None:
         print("No path found")
     else:
@@ -190,7 +195,7 @@ def create_grid():
 
 
 def create_maze(row, column):
-    global columns, rows, maze_root
+    global columns, rows, maze_root, canvas
     columns = column
     rows = row
     maze_root = tk.Tk()
