@@ -1,18 +1,19 @@
 import tkinter as tk
 from tkmacosx import Button, CircleButton
+from tkinter import messagebox
 import selectionUI as selection
+import resultMaze as rm
+
 
 # declare global variables
 maze_root = None
 canvas = None
-
 start_mode = False
 end_mode = False
 start_placed = False
 end_placed = False
 start_position = None
 end_position = None
-
 columns = 0
 rows = 0
 walls = set()
@@ -22,11 +23,9 @@ walls = set()
 def neighbors(node, grid):
     global walls
     i, j = node
-    row = len(grid)
-    column = len(grid[0])
     possible_neighbors = [(i - 1, j), (i + 1, j), (i, j - 1), (i, j + 1)]
     valid_neighbors = [(x, y) for x, y in possible_neighbors if
-                       0 <= x < row and 0 <= y < column and (x, y) not in walls]
+                       0 <= x < len(grid) and 0 <= y < len(grid[0]) and (x, y) not in walls]
     return valid_neighbors
 
 
@@ -37,7 +36,6 @@ def astar(grid, start, goal):
     came_from = {}
     g_score = {start: 0}
     f_score = {start: heuristic(start, goal)}
-
     while open_list:
         current = min(open_list, key=lambda node: f_score[node])
 
@@ -64,11 +62,14 @@ def astar(grid, start, goal):
                 if neighbor not in open_list:
                     open_list.append(neighbor)
 
-    return None
+    return "No path found"
 
 
 def heuristic(node, goal):
-    return abs(node[0] - goal[0]) + abs(node[1] - goal[1])
+    if node is not None and goal is not None:
+        return abs(node[0] - goal[0]) + abs(node[1] - goal[1])
+    else:
+        return float('inf')
 
 
 # when a line is clicked, change the color of the line and add it to the walls list
@@ -85,27 +86,18 @@ def on_line_click(tag, event):
     if line_color == "#CCCCCC":
         line.itemconfig(item, fill="red")
         # if walls already has the wall, don't add it
-        if (i, j) in walls:
+        if ((i, j, side)) in walls:
             return
         elif side == "top" or side == "left":
-            walls.add((i, j))
-        elif side == "right":
-            walls.add((i, j + 1))
-        elif side == "bottom":
-            walls.add((i + 1, j))
+            walls.add((i, j, side))
 
     else:
         line.itemconfig(item, fill="#CCCCCC")
         # if walls doesn't have the wall, don't remove it
-        if (i, j) not in walls:
+        if ((i, j, side)) not in walls:
             return
         elif side == "top" or side == "left":
-            walls.remove((i, j))
-        elif side == "right":
-            walls.remove((i, j + 1))
-        elif side == "bottom":
-            walls.remove((i + 1, j))
-
+            walls.remove((i, j, side))
 
 
 def place_start():
@@ -127,15 +119,14 @@ def place_end():
 def on_cell_click(event):
     global start_mode, end_mode, start_position, end_position, canvas
     x_center = (event.x // (868 // columns)) * (868 // columns) + (868 // (2 * columns))
+    y_center = (event.y // (560 // rows)) * (560 // rows) + (560 // (2 * rows))
     if start_mode:
         # Calculate the center of the cell
-        y_center = (event.y // (560 // rows)) * (560 // rows) + (560 // (2 * rows))
         canvas.create_oval(x_center - 15, y_center - 15, x_center + 15, y_center + 15, fill="green", outline="green")
         start_position = (x_center, y_center)
         start_mode = False
     elif end_mode:
         # Calculate the center of the cell
-        y_center = (event.y // (560 // rows)) * (560 // rows) + (560 // (2 * rows))
         canvas.create_oval(x_center - 15, y_center - 15, x_center + 15, y_center + 15, fill="red", outline="red")
         end_mode = False
         end_position = (x_center, y_center)
@@ -172,15 +163,20 @@ def clear():
 
 def solve_maze():
     global start_position, end_position, rows, columns
-    grid = create_grid()
     if start_position is None or end_position is None:
-        return
+        messagebox.showerror("Error", "Please place start and end points")
+    grid = create_grid()
+    start_position = int((start_position[0] - (868 // (2 * columns))) / (868 // columns)), int(
+        (start_position[1] - (560 // (2 * rows))) / (560 // rows))
+    end_position = int((end_position[0] - (868 // (2 * columns))) / (868 // columns)), int(
+        (end_position[1] - (560 // (2 * rows))) / (560 // rows))
     path = astar(grid, start_position, end_position)
+    maze_root.destroy()
+    print(f"Path from {start_position} to {end_position}: {path}")
+    print(start_position)
+    print(end_position)
     print(walls)
-    if path is None:
-        print("No path found")
-    else:
-        return path
+    rm.resultMaze(rows, columns, start_position, end_position, walls, path)
 
 
 def create_grid():
@@ -222,8 +218,7 @@ def create_maze(row, column):
                          command=go_back)
     back_button.pack(side="top", anchor="nw", padx=(10, 0), pady=(10, 0))
 
-    canvas = tk.Canvas(maze_root, width=880, height=565, borderwidth=0,
-                       highlightthickness=0)
+    canvas = tk.Canvas(maze_root, width=880, height=565, borderwidth=0, highlightthickness=0)
     canvas.pack(pady=30, padx=10)
     canvas.configure(bg=maze_root.cget('bg'))
 
