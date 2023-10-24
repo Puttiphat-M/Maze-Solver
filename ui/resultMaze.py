@@ -5,23 +5,23 @@ from tkmacosx import Button
 def get_line_coordinates(i, j, side, row_cell, column_cell):
     x1, y1, x2, y2 = 0, 0, 0, 0
     if side == "top":
-        x1 = j * column_cell
-        y1 = i * row_cell
+        x1 = i * column_cell
+        y1 = j * row_cell
         x2 = x1 + column_cell
         y2 = y1
     elif side == "left":
-        x1 = j * column_cell
-        y1 = i * row_cell
+        x1 = i * column_cell
+        y1 = j * row_cell
         x2 = x1
         y2 = y1 + row_cell
     elif side == "right":
-        x1 = (j + 1) * column_cell
-        y1 = i * row_cell
+        x1 = (i + 1) * column_cell
+        y1 = j * row_cell
         x2 = x1
         y2 = y1 + row_cell
     elif side == "bottom":
-        x1 = j * column_cell
-        y1 = (i + 1) * row_cell
+        x1 = i * column_cell
+        y1 = (j + 1) * row_cell
         x2 = x1 + column_cell
         y2 = y1
     return x1, y1, x2, y2

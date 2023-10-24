@@ -19,13 +19,30 @@ rows = 0
 walls = set()
 
 
-# a-star algorithm section
 def neighbors(node, grid):
     global walls
     i, j = node
+    row = len(grid)
+    column = len(grid[0])
+
     possible_neighbors = [(i - 1, j), (i + 1, j), (i, j - 1), (i, j + 1)]
-    valid_neighbors = [(x, y) for x, y in possible_neighbors if
-                       0 <= x < len(grid) and 0 <= y < len(grid[0]) and (x, y) not in walls]
+    valid_neighbors = []
+
+    for x, y in possible_neighbors:
+        if 0 <= x < row and 0 <= y < column:
+            valid = True
+            if (x, y, 'left') in walls and j > y:
+                valid = False
+            if (x, y, 'right') in walls and j < y:
+                valid = False
+            if (x, y, 'top') in walls and i > x:
+                valid = False
+            if (x, y, 'bottom') in walls and i < x:
+                valid = False
+
+            if valid:
+                valid_neighbors.append((x, y))
+
     return valid_neighbors
 
 
@@ -86,18 +103,18 @@ def on_line_click(tag, event):
     if line_color == "#CCCCCC":
         line.itemconfig(item, fill="red")
         # if walls already has the wall, don't add it
-        if ((i, j, side)) in walls:
+        if ((j, i, side)) in walls:
             return
         elif side == "top" or side == "left":
-            walls.add((i, j, side))
+            walls.add((j, i, side))
 
     else:
         line.itemconfig(item, fill="#CCCCCC")
         # if walls doesn't have the wall, don't remove it
-        if ((i, j, side)) not in walls:
+        if ((j, i, side)) not in walls:
             return
         elif side == "top" or side == "left":
-            walls.remove((i, j, side))
+            walls.remove((j, i, side))
 
 
 def place_start():
