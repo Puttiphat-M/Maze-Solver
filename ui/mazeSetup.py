@@ -16,82 +16,12 @@ start_position = None
 end_position = None
 columns = 0
 rows = 0
-walls = set()
-
-
-def neighbors(node, grid):
-    global walls
-    i, j = node
-    row = len(grid)
-    column = len(grid[0])
-
-    possible_neighbors = [(i - 1, j), (i + 1, j), (i, j - 1), (i, j + 1)]
-    valid_neighbors = []
-
-    for x, y in possible_neighbors:
-        if 0 <= x < row and 0 <= y < column:
-            valid = True
-            if (x, y, 'left') in walls and j > y:
-                valid = False
-            if (x, y, 'right') in walls and j < y:
-                valid = False
-            if (x, y, 'top') in walls and i > x:
-                valid = False
-            if (x, y, 'bottom') in walls and i < x:
-                valid = False
-
-            if valid:
-                valid_neighbors.append((x, y))
-
-    return valid_neighbors
-
-
-def astar(grid, start, goal):
-    global walls
-    open_list = [start]
-    closed_list = set()
-    came_from = {}
-    g_score = {start: 0}
-    f_score = {start: heuristic(start, goal)}
-    while open_list:
-        current = min(open_list, key=lambda node: f_score[node])
-
-        if current == goal:
-            path = []
-            while current in came_from:
-                path.insert(0, current)
-                current = came_from[current]
-            return path
-
-        open_list.remove(current)
-        closed_list.add(current)
-
-        for neighbor in neighbors(current, grid):
-            if neighbor in closed_list:
-                continue
-            tentative_g_score = g_score[current] + 1
-
-            if neighbor not in open_list or tentative_g_score < g_score[neighbor]:
-                came_from[neighbor] = current
-                g_score[neighbor] = tentative_g_score
-                f_score[neighbor] = g_score[neighbor] + heuristic(neighbor, goal)
-
-                if neighbor not in open_list:
-                    open_list.append(neighbor)
-
-    return "No path found"
-
-
-def heuristic(node, goal):
-    if node is not None and goal is not None:
-        return abs(node[0] - goal[0]) + abs(node[1] - goal[1])
-    else:
-        return float('inf')
+walls = {}
 
 
 # when a line is clicked, change the color of the line and add it to the walls list
 def on_line_click(tag, event):
-    side, i, j = tag.split("_")
+    direction, j, i = tag.split("_")
     i, j = int(i), int(j)
 
     line = event.widget
@@ -103,18 +33,24 @@ def on_line_click(tag, event):
     if line_color == "#CCCCCC":
         line.itemconfig(item, fill="red")
         # if walls already has the wall, don't add it
-        if ((j, i, side)) in walls:
+        if (i, j) in walls:
             return
-        elif side == "top" or side == "left":
-            walls.add((j, i, side))
+        elif direction == "N":
+            walls[(i, j)] = {'E': 0, 'W': 0, 'N': 1, 'S': 0}
+        elif direction == "W":
+            walls[(i, j)] = {'E': 0, 'W': 1, 'N': 0, 'S': 0}
+        elif direction == "E":
+            walls[(i, j)] = {'E': 1, 'W': 0, 'N': 0, 'S': 0}
+        elif direction == "S":
+            walls[(i, j)] = {'E': 0, 'W': 0, 'N': 0, 'S': 1}
 
     else:
         line.itemconfig(item, fill="#CCCCCC")
         # if walls doesn't have the wall, don't remove it
-        if ((j, i, side)) not in walls:
+        if (i, j) not in walls:
             return
-        elif side == "top" or side == "left":
-            walls.remove((j, i, side))
+        else:
+            del walls[(i, j)]
 
 
 def place_start():
@@ -156,7 +92,7 @@ def go_back():
     end_placed = False
     start_mode = False
     end_mode = False
-    walls = set()
+    walls = {}
     selection.create_selection()
 
 
@@ -166,7 +102,7 @@ def clear():
     end_position = None
     start_mode = False
     end_mode = False
-    walls = set()
+    walls = {}
 
     maze_root.destroy()
     start_placed = False
@@ -181,30 +117,16 @@ def clear():
 def solve_maze():
     global start_position, end_position, rows, columns
     if start_position is None or end_position is None:
-        messagebox.showerror("Error", "Please place start and end points")
-    grid = create_grid()
-    start_position = int((start_position[0] - (868 // (2 * columns))) / (868 // columns)), int(
-        (start_position[1] - (560 // (2 * rows))) / (560 // rows))
-    end_position = int((end_position[0] - (868 // (2 * columns))) / (868 // columns)), int(
-        (end_position[1] - (560 // (2 * rows))) / (560 // rows))
-    path = astar(grid, start_position, end_position)
-    maze_root.destroy()
-    print(f"Path from {start_position} to {end_position}: {path}")
-    print(start_position)
-    print(end_position)
-    print(walls)
-    rm.resultMaze(rows, columns, start_position, end_position, walls, path)
-
-
-def create_grid():
-    global rows, columns
-    grid = []
-    for i in range(rows):
-        row = []
-        for j in range(columns):
-            row.append((i, j))
-        grid.append(row)
-    return grid
+    else:
+        start_position = int((start_position[0] - (868 // (2 * columns))) / (868 // columns)), int(
+            (start_position[1] - (560 // (2 * rows))) / (560 // rows))
+        end_position = int((end_position[0] - (868 // (2 * columns))) / (868 // columns)), int(
+            (end_position[1] - (560 // (2 * rows))) / (560 // rows))
+        maze_root.destroy()
+        print(start_position)
+        print(end_position)
+        print(walls)
+        rm.resultMaze(rows, columns, start_position, end_position, [(2, 1, "left"), (1, 2, "left"), (3, 1, "left"), (3, 2, "right"), (3, 3, "top")], [(2, 1), (3, 1), (4, 1), (5, 1), (6, 1), (6, 2), (6, 3), (6, 4)])
 
 
 def create_maze(row, column):
@@ -249,19 +171,19 @@ def create_maze(row, column):
             x2 = x1 + column_cell
             y2 = y1 + row_cell
 
-            # Create the tags for each side
-            canvas.create_line(x1, y1, x2, y1, fill="#CCCCCC", tags=f"top_{i}_{j}")
-            canvas.create_line(x1, y1, x1, y2, fill="#CCCCCC", tags=f"left_{i}_{j}")
-            canvas.create_line(x2, y1, x2, y2, fill="#CCCCCC", tags=f"right_{i}_{j}")
-            canvas.create_line(x1, y2, x2, y2, fill="#CCCCCC", tags=f"bottom_{i}_{j}")
+            # Create the tags for each direction
+            canvas.create_line(x1, y1, x2, y1, fill="#CCCCCC", tags=f"N_{i}_{j}")
+            canvas.create_line(x1, y1, x1, y2, fill="#CCCCCC", tags=f"W_{i}_{j}")
+            canvas.create_line(x2, y1, x2, y2, fill="#CCCCCC", tags=f"E_{i}_{j}")
+            canvas.create_line(x1, y2, x2, y2, fill="#CCCCCC", tags=f"S_{i}_{j}")
 
-    # Bind click events to the sides
+    # Bind click events to the direction
     for i in range(rows):
         for j in range(columns):
-            for side in ["top", "left", "right", "bottom"]:
-                tag = f"{side}_{i}_{j}"
-                if not ((side == "top" and i == 0) or (side == "left" and j == 0) or (
-                        side == "right" and j == columns - 1) or (side == "bottom" and i == rows - 1)):
+            for direction in ["N", "W", "E", "S"]:
+                tag = f"{direction}_{i}_{j}"
+                if not ((direction == "N" and i == 0) or (direction == "W" and j == 0) or (
+                        direction == "E" and j == columns - 1) or (direction == "S" and i == rows - 1)):
                     canvas.tag_bind(tag, "<Button-1>", lambda event, tag=tag: on_line_click(tag, event))
 
     canvas.bind("<Button-1>", on_cell_click)
