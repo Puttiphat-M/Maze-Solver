@@ -4,22 +4,22 @@ from tkmacosx import Button
 
 def get_line_coordinates(i, j, side, row_cell, column_cell):
     x1, y1, x2, y2 = 0, 0, 0, 0
-    if side == "top":
+    if side == "N":
         x1 = i * column_cell
         y1 = j * row_cell
         x2 = x1 + column_cell
         y2 = y1
-    elif side == "left":
+    elif side == "W":
         x1 = i * column_cell
         y1 = j * row_cell
         x2 = x1
         y2 = y1 + row_cell
-    elif side == "right":
+    elif side == "E":
         x1 = (i + 1) * column_cell
         y1 = j * row_cell
         x2 = x1
         y2 = y1 + row_cell
-    elif side == "bottom":
+    elif side == "S":
         x1 = i * column_cell
         y1 = (j + 1) * row_cell
         x2 = x1 + column_cell
@@ -52,18 +52,18 @@ def resultMaze(rows, columns, start_position, end_position, walls, path):
             y2 = y1 + row_cell
 
             # Create the tags for each side
-            canvas.create_line(x1, y1, x2, y1, fill="#CCCCCC", tags=f"top_{i}_{j}")
-            canvas.create_line(x1, y1, x1, y2, fill="#CCCCCC", tags=f"left_{i}_{j}")
-            canvas.create_line(x2, y1, x2, y2, fill="#CCCCCC", tags=f"right_{i}_{j}")
-            canvas.create_line(x1, y2, x2, y2, fill="#CCCCCC", tags=f"bottom_{i}_{j}")
+            canvas.create_line(x1, y1, x2, y1, fill="#CCCCCC", tags=f"N_{i}_{j}")
+            canvas.create_line(x1, y1, x1, y2, fill="#CCCCCC", tags=f"W_{i}_{j}")
+            canvas.create_line(x2, y1, x2, y2, fill="#CCCCCC", tags=f"E_{i}_{j}")
+            canvas.create_line(x1, y2, x2, y2, fill="#CCCCCC", tags=f"S_{i}_{j}")
 
     # Bind click events to the sides
     for i in range(rows):
         for j in range(columns):
-            for side in ["top", "left", "right", "bottom"]:
+            for side in ["N", "W", "E", "S"]:
                 tag = f"{side}_{i}_{j}"
-                if not ((side == "top" and i == 0) or (side == "left" and j == 0) or (
-                        side == "right" and j == columns - 1) or (side == "bottom" and i == rows - 1)):
+                if not ((side == "N" and i == 0) or (side == "W" and j == 0) or (
+                        side == "E" and j == columns - 1) or (side == "S" and i == rows - 1)):
                     canvas.tag_bind(tag, "<Button-1>")
 
     ok_button = Button(result_root, text="OK", command=lambda: result_root.destroy(), bg="#3E505B", fg="white", font=("Inter", 15, 'bold'), borderless=1, width=80, height=30)
@@ -81,14 +81,15 @@ def resultMaze(rows, columns, start_position, end_position, walls, path):
         canvas.create_rectangle(x_center-15, y_center-15, x_center+15, y_center+15, fill="green", outline="green")
 
     # Mock up the clicked lines in red
-    for line in walls:
-        i, j, side = line
-        x1, y1, x2, y2 = get_line_coordinates(i, j, side, row_cell, column_cell)
-        canvas.create_line(x1, y1, x2, y2, fill="red", width=2)
+    for (i, j), sides in walls.items():
+        for side, value in sides.items():
+            if value:
+                x1, y1, x2, y2 = get_line_coordinates(i, j, side, row_cell, column_cell)
+                canvas.create_line(x1, y1, x2, y2, fill="red", width=2)
 
     result_root.mainloop()
 
 
 if __name__ == '__main__':
-    walls = [(2, 1, "left"), (1, 2, "left"), (3, 1, "left"), (3, 2, "right"), (3, 3, "top")]
+    walls = {(3, 5): {'E': 0, 'W': 1, 'N': 0, 'S': 0}, (5, 7): {'E': 0, 'W': 1, 'N': 0, 'S': 0}, (1, 7): {'E': 0, 'W': 0, 'N': 1, 'S': 0}, (2, 5): {'E': 0, 'W': 1, 'N': 0, 'S': 0}}
     resultMaze(8, 8, (1, 1), (6, 4), walls, [(2, 1), (3, 1), (4, 1), (5, 1), (6, 1), (6, 2), (6, 3), (6, 4)])
