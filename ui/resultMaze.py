@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkmacosx import Button
 
+canvas = None
+
 
 def get_line_coordinates(i, j, side, row_cell, column_cell):
     x1, y1, x2, y2 = 0, 0, 0, 0
@@ -28,14 +30,14 @@ def get_line_coordinates(i, j, side, row_cell, column_cell):
 
 
 def resultMaze(rows, columns, start_position, end_position, walls, path):
+    global canvas
     result_root = tk.Tk()
     result_root.title("Maze Solver Result")
 
-    result_root.geometry("1200x840")  # Adjust the window size as needed
-    result_root.resizable(False, False)  # Disable resizing
-    result_root.configure(bg="#8AB0AB")  # Declare bg as 8AB0AB in global
+    result_root.geometry("1200x840")
+    result_root.resizable(False, False)
+    result_root.configure(bg="#8AB0AB")
 
-    global canvas
     canvas = tk.Canvas(result_root, width=880, height=565, borderwidth=0,
                        highlightthickness=0)
     canvas.pack(pady=30, padx=10)
@@ -66,7 +68,8 @@ def resultMaze(rows, columns, start_position, end_position, walls, path):
                         side == "E" and j == columns - 1) or (side == "S" and i == rows - 1)):
                     canvas.tag_bind(tag, "<Button-1>")
 
-    ok_button = Button(result_root, text="OK", command=lambda: result_root.destroy(), bg="#3E505B", fg="white", font=("Inter", 15, 'bold'), borderless=1, width=80, height=30)
+    ok_button = Button(result_root, text="OK", command=lambda: result_root.destroy(), bg="#3E505B", fg="white",
+                       font=("Inter", 15, 'bold'), borderless=1, width=80, height=30)
     ok_button.pack(side="right", padx=(0, 175), pady=(0, 175))
     x_center = (start_position[0] * (868 // columns)) + (868 // (2 * columns))
     y_center = (start_position[1] * (560 // rows)) + (560 // (2 * rows))
@@ -78,7 +81,8 @@ def resultMaze(rows, columns, start_position, end_position, walls, path):
     for x, y in path:
         x_center = (x * (868 // columns)) + (868 // (2 * columns))
         y_center = (y * (560 // rows)) + (560 // (2 * rows))
-        canvas.create_rectangle(x_center-15, y_center-15, x_center+15, y_center+15, fill="green", outline="green")
+        canvas.create_rectangle(x_center - 15, y_center - 15, x_center + 15, y_center + 15, fill="green",
+                                outline="green")
 
     # Mock up the clicked lines in red
     for (i, j), sides in walls.items():
@@ -88,8 +92,3 @@ def resultMaze(rows, columns, start_position, end_position, walls, path):
                 canvas.create_line(x1, y1, x2, y2, fill="red", width=2)
 
     result_root.mainloop()
-
-
-if __name__ == '__main__':
-    walls = {(3, 5): {'E': 0, 'W': 1, 'N': 0, 'S': 0}, (5, 7): {'E': 0, 'W': 1, 'N': 0, 'S': 0}, (1, 7): {'E': 0, 'W': 0, 'N': 1, 'S': 0}, (2, 5): {'E': 0, 'W': 1, 'N': 0, 'S': 0}}
-    resultMaze(8, 8, (1, 1), (6, 4), walls, [(2, 1), (3, 1), (4, 1), (5, 1), (6, 1), (6, 2), (6, 3), (6, 4)])

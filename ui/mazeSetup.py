@@ -23,18 +23,18 @@ def create_grid():
     return grid
 
 
+def initialise_walls():
+    global walls
+    grid = create_grid()
+    walls = {cell: {'E': 0, 'W': 0, 'N': 0, 'S': 0} for cell in grid}
+
+
+# a-star section
 def h(cell1, cell2):
     x1, y1 = cell1
     x2, y2 = cell2
 
     return abs(x1 - x2) + abs(y1 - y2)
-
-
-def initialise_walls():
-    global walls
-    grid = create_grid()
-    walls = {cell: {'E': 0, 'W': 0, 'N': 0, 'S': 0} for cell in grid}
-    print(walls)
 
 
 def aStar():
@@ -55,11 +55,7 @@ def aStar():
             break
 
         for d in 'ESNW':
-            if walls[currCell][d] == 0:  # Check if there's no wall in this direction
-                print(f"currCell{currCell}")
-                print(f"maze_map{walls}")
-                print(f"maze_map[currCell]{walls[currCell]}")
-                print(walls[currCell][d])
+            if walls[currCell][d] == 0:
                 if d == 'S':
                     childCell = (currCell[0], currCell[1] + 1)
                 elif d == 'N':
@@ -68,8 +64,6 @@ def aStar():
                     childCell = (currCell[0] - 1, currCell[1])
                 elif d == 'E':
                     childCell = (currCell[0] + 1, currCell[1])
-
-                print(f"childCell{childCell}")
 
                 if 0 <= childCell[0] < columns and 0 <= childCell[1] < rows:
                     temp_g_score = g_score[currCell] + 1
@@ -89,8 +83,6 @@ def aStar():
     path.append(start_position)
     path.reverse()
     return path
-
-
 
 
 # when a line is clicked, change the color of the line and add it to the walls list
@@ -193,18 +185,13 @@ def clear():
 def solve_maze():
     global start_position, end_position, rows, columns
     if start_position is None or end_position is None:
-        print("error")
     else:
         start_position = int((start_position[0] - (868 // (2 * columns))) / (868 // columns)), int(
             (start_position[1] - (560 // (2 * rows))) / (560 // rows))
         end_position = int((end_position[0] - (868 // (2 * columns))) / (868 // columns)), int(
             (end_position[1] - (560 // (2 * rows))) / (560 // rows))
         maze_root.destroy()
-        print(start_position)
-        print(end_position)
-        print(walls)
         path = aStar()
-        print(path)
         rm.resultMaze(rows, columns, start_position, end_position, walls, path)
 
 
