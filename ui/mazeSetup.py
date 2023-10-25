@@ -1,9 +1,8 @@
 import tkinter as tk
+from queue import PriorityQueue
 from tkmacosx import Button, CircleButton
-from tkinter import messagebox
 import selectionUI as selection
 import resultMaze as rm
-
 
 # declare global variables
 maze_root = None
@@ -19,6 +18,81 @@ rows = 0
 walls = {}
 
 
+def create_grid():
+    grid = [(i, j) for i in range(0, rows) for j in range(0, columns)]
+    return grid
+
+
+def h(cell1, cell2):
+    x1, y1 = cell1
+    x2, y2 = cell2
+
+    return abs(x1 - x2) + abs(y1 - y2)
+
+
+def initialise_walls():
+    global walls
+    grid = create_grid()
+    walls = {cell: {'E': 0, 'W': 0, 'N': 0, 'S': 0} for cell in grid}
+    print(walls)
+
+
+def aStar():
+    start = start_position
+    grid = create_grid()
+    g_score = {cell: float('inf') for cell in grid}
+    g_score[start] = 0
+    f_score = {cell: float('inf') for cell in grid}
+    f_score[start] = h(start, end_position)
+
+    open_set = PriorityQueue()
+    open_set.put((f_score[start], start))
+    aPath = {}
+
+    while not open_set.empty():
+        _, currCell = open_set.get()
+        if currCell == end_position:
+            break
+
+        for d in 'ESNW':
+            if walls[currCell][d] == 0:  # Check if there's no wall in this direction
+                print(f"currCell{currCell}")
+                print(f"maze_map{walls}")
+                print(f"maze_map[currCell]{walls[currCell]}")
+                print(walls[currCell][d])
+                if d == 'S':
+                    childCell = (currCell[0], currCell[1] + 1)
+                elif d == 'N':
+                    childCell = (currCell[0], currCell[1] - 1)
+                elif d == 'W':
+                    childCell = (currCell[0] - 1, currCell[1])
+                elif d == 'E':
+                    childCell = (currCell[0] + 1, currCell[1])
+
+                print(f"childCell{childCell}")
+
+                if 0 <= childCell[0] < columns and 0 <= childCell[1] < rows:
+                    temp_g_score = g_score[currCell] + 1
+                    temp_f_score = temp_g_score + h(childCell, end_position)
+
+                    if temp_f_score < f_score[childCell]:
+                        aPath[childCell] = currCell
+                        g_score[childCell] = temp_g_score
+                        f_score[childCell] = temp_f_score
+                        open_set.put((f_score[childCell], childCell))
+
+    path = []
+    curr = end_position
+    while curr != start_position:
+        path.append(curr)
+        curr = aPath[curr]
+    path.append(start_position)
+    path.reverse()
+    return path
+
+
+
+
 # when a line is clicked, change the color of the line and add it to the walls list
 def on_line_click(tag, event):
     direction, j, i = tag.split("_")
@@ -32,25 +106,27 @@ def on_line_click(tag, event):
 
     if line_color == "#CCCCCC":
         line.itemconfig(item, fill="red")
-        # if walls already has the wall, don't add it
-        if (i, j) in walls:
-            return
-        elif direction == "N":
-            walls[(i, j)] = {'E': 0, 'W': 0, 'N': 1, 'S': 0}
-        elif direction == "W":
-            walls[(i, j)] = {'E': 0, 'W': 1, 'N': 0, 'S': 0}
-        elif direction == "E":
-            walls[(i, j)] = {'E': 1, 'W': 0, 'N': 0, 'S': 0}
-        elif direction == "S":
-            walls[(i, j)] = {'E': 0, 'W': 0, 'N': 0, 'S': 1}
+        walls[(i, j)][direction] = 1
+        if direction == 'E':
+            walls[(i + 1, j)]['W'] = 1
+        elif direction == 'W':
+            walls[(i - 1, j)]['E'] = 1
+        elif direction == 'N':
+            walls[(i, j - 1)]['S'] = 1
+        elif direction == 'S':
+            walls[(i, j + 1)]['N'] = 1
 
     else:
         line.itemconfig(item, fill="#CCCCCC")
-        # if walls doesn't have the wall, don't remove it
-        if (i, j) not in walls:
-            return
-        else:
-            del walls[(i, j)]
+        walls[(i, j)][direction] = 0
+        if direction == 'E':
+            walls[(i + 1, j)]['W'] = 0
+        elif direction == 'W':
+            walls[(i - 1, j)]['E'] = 0
+        elif direction == 'N':
+            walls[(i, j - 1)]['S'] = 0
+        elif direction == 'S':
+            walls[(i, j + 1)]['N'] = 0
 
 
 def place_start():
@@ -117,6 +193,7 @@ def clear():
 def solve_maze():
     global start_position, end_position, rows, columns
     if start_position is None or end_position is None:
+        print("error")
     else:
         start_position = int((start_position[0] - (868 // (2 * columns))) / (868 // columns)), int(
             (start_position[1] - (560 // (2 * rows))) / (560 // rows))
@@ -126,7 +203,9 @@ def solve_maze():
         print(start_position)
         print(end_position)
         print(walls)
-        rm.resultMaze(rows, columns, start_position, end_position, [(2, 1, "left"), (1, 2, "left"), (3, 1, "left"), (3, 2, "right"), (3, 3, "top")], [(2, 1), (3, 1), (4, 1), (5, 1), (6, 1), (6, 2), (6, 3), (6, 4)])
+        path = aStar()
+        print(path)
+        rm.resultMaze(rows, columns, start_position, end_position, walls, path)
 
 
 def create_maze(row, column):
@@ -176,6 +255,8 @@ def create_maze(row, column):
             canvas.create_line(x1, y1, x1, y2, fill="#CCCCCC", tags=f"W_{i}_{j}")
             canvas.create_line(x2, y1, x2, y2, fill="#CCCCCC", tags=f"E_{i}_{j}")
             canvas.create_line(x1, y2, x2, y2, fill="#CCCCCC", tags=f"S_{i}_{j}")
+
+    initialise_walls()
 
     # Bind click events to the direction
     for i in range(rows):
