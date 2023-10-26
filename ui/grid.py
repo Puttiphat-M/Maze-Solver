@@ -1,11 +1,8 @@
-def draw_grid(root, tk, rows, columns):
+def draw_grid(root, tk, rows, columns, column_cell, row_cell):
     canvas = tk.Canvas(root, width=880, height=565, borderwidth=0,
                        highlightthickness=0)
     canvas.pack(pady=30, padx=10)
     canvas.configure(bg=root.cget('bg'))
-
-    row_cell = 560 / rows
-    column_cell = 868 / columns
 
     for i in range(rows):
         for j in range(columns):
@@ -19,3 +16,5 @@ def draw_grid(root, tk, rows, columns):
             canvas.create_line(x1, y1, x1, y2, fill="#CCCCCC", tags=f"W_{i}_{j}")
             canvas.create_line(x2, y1, x2, y2, fill="#CCCCCC", tags=f"E_{i}_{j}")
             canvas.create_line(x1, y2, x2, y2, fill="#CCCCCC", tags=f"S_{i}_{j}")
+
+    return canvas
