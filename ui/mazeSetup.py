@@ -17,7 +17,6 @@ start_placed = False
 end_placed = False
 start_position = None
 end_position = None
-
 columns = 0
 rows = 0
 
@@ -204,17 +203,18 @@ def clear():
 
 
 def solve_maze():
-    global start_position, end_position, rows, columns
+    global start_position, end_position, rows, columns,start_mode, end_mode, walls, maze_root, start_placed, end_placed
 
     if start_position is None or end_position is None:
         message = "Please place start and end point, click OK to continue"
         show_mac_alert(message)
-
     else:
-        start_position = int((start_position[0] - (868 // (2 * columns))) / (868 // columns)), int(
-            (start_position[1] - (560 // (2 * rows))) / (560 // rows))
-        end_position = int((end_position[0] - (868 // (2 * columns))) / (868 // columns)), int(
-            (end_position[1] - (560 // (2 * rows))) / (560 // rows))
+        if start_position[0] >= columns or start_position[1] >= rows or end_position[0] >= columns or end_position[1] >= rows:
+            start_position = int((start_position[0] - (868 // (2 * columns))) / (868 // columns)), int(
+                (start_position[1] - (560 // (2 * rows))) / (560 // rows))
+            end_position = int((end_position[0] - (868 // (2 * columns))) / (868 // columns)), int(
+                (end_position[1] - (560 // (2 * rows))) / (560 // rows))
+
         path = aStar()
         # if no path is found, do not create the result maze, stay on the maze setup screen
         if path is not None:
@@ -222,9 +222,17 @@ def solve_maze():
             rm.resultMaze(rows, columns, start_position, end_position, walls, path)
 
 
+
 # main function to create the maze setup screen
 def create_maze(row, column):
-    global columns, rows, maze_root, canvas
+    global columns, rows, maze_root, canvas, start_position, end_position, start_mode, end_mode, walls, start_placed, end_placed
+    start_position = None
+    end_position = None
+    start_mode = False
+    end_mode = False
+    walls = {}
+    start_placed = False
+    end_placed = False
     columns = column
     rows = row
     maze_root = tk.Tk()
@@ -252,7 +260,9 @@ def create_maze(row, column):
     back_button.pack(side="top", anchor="nw", padx=(10, 0), pady=(10, 0))
 
     # Draw the grid
-    canvas = draw_grid(maze_root, tk, rows, columns)
+    row_cell = 560 / rows
+    column_cell = 868 / columns
+    canvas = draw_grid(maze_root, tk, rows, columns, column_cell, row_cell)
 
     initialise_walls()
 
