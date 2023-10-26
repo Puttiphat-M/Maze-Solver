@@ -3,6 +3,7 @@ from queue import PriorityQueue
 from tkmacosx import Button, CircleButton
 import selectionUI as selection
 import resultMaze as rm
+import subprocess
 
 # declare global variables
 maze_root = None
@@ -16,6 +17,11 @@ end_position = None
 columns = 0
 rows = 0
 walls = {}
+
+
+def show_mac_alert(message):
+    script = f'display dialog "{message}" buttons "OK" default button "OK"'
+    subprocess.run(['osascript', '-e', script])
 
 
 def create_grid():
@@ -79,7 +85,12 @@ def aStar():
     curr = end_position
     while curr != start_position:
         path.append(curr)
-        curr = aPath[curr]
+        try:
+            curr = aPath[curr]
+        except KeyError:
+            message = "No path found, click OK to continue"
+            show_mac_alert(message)
+            return None
     path.append(start_position)
     path.reverse()
     return path
@@ -184,15 +195,20 @@ def clear():
 
 def solve_maze():
     global start_position, end_position, rows, columns
+
     if start_position is None or end_position is None:
+        message = "Please place start and end point, click OK to continue"
+        show_mac_alert(message)
+
     else:
         start_position = int((start_position[0] - (868 // (2 * columns))) / (868 // columns)), int(
             (start_position[1] - (560 // (2 * rows))) / (560 // rows))
         end_position = int((end_position[0] - (868 // (2 * columns))) / (868 // columns)), int(
             (end_position[1] - (560 // (2 * rows))) / (560 // rows))
-        maze_root.destroy()
         path = aStar()
-        rm.resultMaze(rows, columns, start_position, end_position, walls, path)
+        if path is not None:
+            maze_root.destroy()
+            rm.resultMaze(rows, columns, start_position, end_position, walls, path)
 
 
 def create_maze(row, column):
