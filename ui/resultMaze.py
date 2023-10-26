@@ -1,8 +1,16 @@
 import tkinter as tk
 from tkmacosx import Button
 from grid import draw_grid
+import selectionUI as st
 
 canvas = None
+result_root = None
+
+
+def back_to_selection():
+    global result_root
+    result_root.destroy()
+    st.create_selection()
 
 
 # function to get where to draw the line
@@ -32,7 +40,7 @@ def get_line_coordinates(i, j, side, row_cell, column_cell):
 
 
 def resultMaze(rows, columns, start_position, end_position, walls, path):
-    global canvas
+    global canvas, result_root
     result_root = tk.Tk()
     result_root.title("Maze Solver Result")
 
@@ -41,9 +49,11 @@ def resultMaze(rows, columns, start_position, end_position, walls, path):
     result_root.configure(bg="#8AB0AB")
 
     # Draw the grid
-    draw_grid(result_root, tk, rows, columns)
+    row_cell = 560 / rows
+    column_cell = 868 / columns
+    canvas = draw_grid(result_root, tk, rows, columns, column_cell, row_cell)
 
-    ok_button = Button(result_root, text="OK", command=lambda: result_root.destroy(), bg="#3E505B", fg="white",
+    ok_button = Button(result_root, text="OK", command=back_to_selection, bg="#3E505B", fg="white",
                        font=("Inter", 15, 'bold'), borderless=1, width=80, height=30)
     ok_button.pack(side="right", padx=(0, 175), pady=(0, 175))
 
