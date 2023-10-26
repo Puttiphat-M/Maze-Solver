@@ -4,18 +4,24 @@ from tkmacosx import Button, CircleButton
 import selectionUI as selection
 import resultMaze as rm
 import subprocess
+from grid import draw_grid
 
 # declare global variables
 maze_root = None
 canvas = None
+
+# declare start and end node variables
 start_mode = False
 end_mode = False
 start_placed = False
 end_placed = False
 start_position = None
 end_position = None
+
 columns = 0
 rows = 0
+
+# map of walls and maze
 walls = {}
 
 
@@ -107,6 +113,7 @@ def on_line_click(tag, event):
 
     line_color = line.itemcget(item, "fill")
 
+    # if the line is grey, change it to red and add it to the walls list
     if line_color == "#CCCCCC":
         line.itemconfig(item, fill="red")
         walls[(i, j)][direction] = 1
@@ -119,6 +126,7 @@ def on_line_click(tag, event):
         elif direction == 'S':
             walls[(i, j + 1)]['N'] = 1
 
+    # if the line is red, change it to grey and remove it from the walls list
     else:
         line.itemconfig(item, fill="#CCCCCC")
         walls[(i, j)][direction] = 0
@@ -164,6 +172,7 @@ def on_cell_click(event):
         end_position = (x_center, y_center)
 
 
+# go back to the selection screen
 def go_back():
     global maze_root, start_placed, end_placed, start_mode, end_mode, walls
     maze_root.destroy()
@@ -175,6 +184,7 @@ def go_back():
     selection.create_selection()
 
 
+# clear the maze
 def clear():
     global start_position, end_position, start_mode, end_mode, walls, maze_root, start_placed, end_placed
     start_position = None
@@ -206,11 +216,13 @@ def solve_maze():
         end_position = int((end_position[0] - (868 // (2 * columns))) / (868 // columns)), int(
             (end_position[1] - (560 // (2 * rows))) / (560 // rows))
         path = aStar()
+        # if no path is found, do not create the result maze, stay on the maze setup screen
         if path is not None:
             maze_root.destroy()
             rm.resultMaze(rows, columns, start_position, end_position, walls, path)
 
 
+# main function to create the maze setup screen
 def create_maze(row, column):
     global columns, rows, maze_root, canvas
     columns = column
@@ -239,25 +251,8 @@ def create_maze(row, column):
                          command=go_back)
     back_button.pack(side="top", anchor="nw", padx=(10, 0), pady=(10, 0))
 
-    canvas = tk.Canvas(maze_root, width=880, height=565, borderwidth=0, highlightthickness=0)
-    canvas.pack(pady=30, padx=10)
-    canvas.configure(bg=maze_root.cget('bg'))
-
-    row_cell = 560 / rows
-    column_cell = 868 / columns
-
-    for i in range(rows):
-        for j in range(columns):
-            x1 = j * column_cell
-            y1 = i * row_cell
-            x2 = x1 + column_cell
-            y2 = y1 + row_cell
-
-            # Create the tags for each direction
-            canvas.create_line(x1, y1, x2, y1, fill="#CCCCCC", tags=f"N_{i}_{j}")
-            canvas.create_line(x1, y1, x1, y2, fill="#CCCCCC", tags=f"W_{i}_{j}")
-            canvas.create_line(x2, y1, x2, y2, fill="#CCCCCC", tags=f"E_{i}_{j}")
-            canvas.create_line(x1, y2, x2, y2, fill="#CCCCCC", tags=f"S_{i}_{j}")
+    # Draw the grid
+    canvas = draw_grid(maze_root, tk, rows, columns)
 
     initialise_walls()
 
@@ -270,6 +265,7 @@ def create_maze(row, column):
                         direction == "E" and j == columns - 1) or (direction == "S" and i == rows - 1)):
                     canvas.tag_bind(tag, "<Button-1>", lambda event, tag=tag: on_line_click(tag, event))
 
+    # pack the canvas and bind click events to the cells
     canvas.bind("<Button-1>", on_cell_click)
 
     button_width = 80

@@ -1,9 +1,11 @@
 import tkinter as tk
 from tkmacosx import Button
+from grid import draw_grid
 
 canvas = None
 
 
+# function to get where to draw the line
 def get_line_coordinates(i, j, side, row_cell, column_cell):
     x1, y1, x2, y2 = 0, 0, 0, 0
     if side == "N":
@@ -38,53 +40,31 @@ def resultMaze(rows, columns, start_position, end_position, walls, path):
     result_root.resizable(False, False)
     result_root.configure(bg="#8AB0AB")
 
-    canvas = tk.Canvas(result_root, width=880, height=565, borderwidth=0,
-                       highlightthickness=0)
-    canvas.pack(pady=30, padx=10)
-    canvas.configure(bg=result_root.cget('bg'))
-
-    row_cell = 560 / rows
-    column_cell = 868 / columns
-
-    for i in range(rows):
-        for j in range(columns):
-            x1 = j * column_cell
-            y1 = i * row_cell
-            x2 = x1 + column_cell
-            y2 = y1 + row_cell
-
-            # Create the tags for each side
-            canvas.create_line(x1, y1, x2, y1, fill="#CCCCCC", tags=f"N_{i}_{j}")
-            canvas.create_line(x1, y1, x1, y2, fill="#CCCCCC", tags=f"W_{i}_{j}")
-            canvas.create_line(x2, y1, x2, y2, fill="#CCCCCC", tags=f"E_{i}_{j}")
-            canvas.create_line(x1, y2, x2, y2, fill="#CCCCCC", tags=f"S_{i}_{j}")
-
-    # Bind click events to the sides
-    for i in range(rows):
-        for j in range(columns):
-            for side in ["N", "W", "E", "S"]:
-                tag = f"{side}_{i}_{j}"
-                if not ((side == "N" and i == 0) or (side == "W" and j == 0) or (
-                        side == "E" and j == columns - 1) or (side == "S" and i == rows - 1)):
-                    canvas.tag_bind(tag, "<Button-1>")
+    # Draw the grid
+    draw_grid(result_root, tk, rows, columns)
 
     ok_button = Button(result_root, text="OK", command=lambda: result_root.destroy(), bg="#3E505B", fg="white",
                        font=("Inter", 15, 'bold'), borderless=1, width=80, height=30)
     ok_button.pack(side="right", padx=(0, 175), pady=(0, 175))
+
+    # Draw the start and end positions
+    # start
     x_center = (start_position[0] * (868 // columns)) + (868 // (2 * columns))
     y_center = (start_position[1] * (560 // rows)) + (560 // (2 * rows))
     canvas.create_oval(x_center - 15, y_center - 15, x_center + 15, y_center + 15, fill="green", outline="green")
+    # end
     x_center = (end_position[0] * (868 // columns)) + (868 // (2 * columns))
     y_center = (end_position[1] * (560 // rows)) + (560 // (2 * rows))
     canvas.create_oval(x_center - 15, y_center - 15, x_center + 15, y_center + 15, fill="red", outline="red")
 
+    # Draw the path
     for x, y in path:
         x_center = (x * (868 // columns)) + (868 // (2 * columns))
         y_center = (y * (560 // rows)) + (560 // (2 * rows))
         canvas.create_rectangle(x_center - 15, y_center - 15, x_center + 15, y_center + 15, fill="green",
                                 outline="green")
 
-    # Mock up the clicked lines in red
+    # Draw the walls
     for (i, j), sides in walls.items():
         for side, value in sides.items():
             if value:
