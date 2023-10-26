@@ -49,15 +49,14 @@ def h(cell1, cell2):
 
 
 def aStar():
-    start = start_position
     grid = create_grid()
     g_score = {cell: float('inf') for cell in grid}
-    g_score[start] = 0
+    g_score[start_position] = 0
     f_score = {cell: float('inf') for cell in grid}
-    f_score[start] = h(start, end_position)
+    f_score[start_position] = h(start_position, end_position)
 
     open_set = PriorityQueue()
-    open_set.put((f_score[start], start))
+    open_set.put((f_score[start_position], start_position))
     aPath = {}
 
     while not open_set.empty():
@@ -164,11 +163,15 @@ def on_cell_click(event):
         canvas.create_oval(x_center - 15, y_center - 15, x_center + 15, y_center + 15, fill="green", outline="green")
         start_position = (x_center, y_center)
         start_mode = False
+        start_position = int((start_position[0] - (868 // (2 * columns))) / (868 // columns)), int(
+            (start_position[1] - (560 // (2 * rows))) / (560 // rows))
     elif end_mode:
         # Calculate the center of the cell
         canvas.create_oval(x_center - 15, y_center - 15, x_center + 15, y_center + 15, fill="red", outline="red")
-        end_mode = False
         end_position = (x_center, y_center)
+        end_mode = False
+        end_position = int((end_position[0] - (868 // (2 * columns))) / (868 // columns)), int(
+            (end_position[1] - (560 // (2 * rows))) / (560 // rows))
 
 
 # go back to the selection screen
@@ -208,18 +211,12 @@ def solve_maze():
     if start_position is None or end_position is None:
         message = "Please place start and end point, click OK to continue"
         show_mac_alert(message)
-    else:
-        if start_position[0] >= columns or start_position[1] >= rows or end_position[0] >= columns or end_position[1] >= rows:
-            start_position = int((start_position[0] - (868 // (2 * columns))) / (868 // columns)), int(
-                (start_position[1] - (560 // (2 * rows))) / (560 // rows))
-            end_position = int((end_position[0] - (868 // (2 * columns))) / (868 // columns)), int(
-                (end_position[1] - (560 // (2 * rows))) / (560 // rows))
 
-        path = aStar()
-        # if no path is found, do not create the result maze, stay on the maze setup screen
-        if path is not None:
-            maze_root.destroy()
-            rm.resultMaze(rows, columns, start_position, end_position, walls, path)
+    path = aStar()
+    # if no path is found, do not create the result maze, stay on the maze setup screen
+    if path is not None:
+        maze_root.destroy()
+        rm.resultMaze(rows, columns, start_position, end_position, walls, path)
 
 
 
