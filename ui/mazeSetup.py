@@ -1,5 +1,5 @@
 import tkinter as tk
-from queue import PriorityQueue
+from prolog import run_prolog_query
 from tkmacosx import Button, CircleButton
 import selectionUI as selection
 import resultMaze as rm
@@ -40,64 +40,75 @@ def initialise_walls():
     walls = {cell: {'E': 0, 'W': 0, 'N': 0, 'S': 0} for cell in grid}
 
 
-# a-star section
-def h(cell1, cell2):
-    x1, y1 = cell1
-    x2, y2 = cell2
-
-    return abs(x1 - x2) + abs(y1 - y2)
-
-
-def aStar():
+def prolog_aStar():
+    global start_position, end_position, walls
     grid = create_grid()
-    g_score = {cell: float('inf') for cell in grid}
-    g_score[start_position] = 0
-    f_score = {cell: float('inf') for cell in grid}
-    f_score[start_position] = h(start_position, end_position)
+    # Query to run A* algorithm with parameters
+    prolog_query = f"a_star({grid}, {start_position}, {end_position}, {walls}, Path).\n"
 
-    open_set = PriorityQueue()
-    open_set.put((f_score[start_position], start_position))
-    aPath = {}
+    # Run the Prolog query
+    output = run_prolog_query(prolog_query)
 
-    while not open_set.empty():
-        _, currCell = open_set.get()
-        if currCell == end_position:
-            break
+    return output
 
-        for d in 'ESNW':
-            if walls[currCell][d] == 0:
-                if d == 'S':
-                    childCell = (currCell[0], currCell[1] + 1)
-                elif d == 'N':
-                    childCell = (currCell[0], currCell[1] - 1)
-                elif d == 'W':
-                    childCell = (currCell[0] - 1, currCell[1])
-                elif d == 'E':
-                    childCell = (currCell[0] + 1, currCell[1])
-
-                if 0 <= childCell[0] < columns and 0 <= childCell[1] < rows:
-                    temp_g_score = g_score[currCell] + 1
-                    temp_f_score = temp_g_score + h(childCell, end_position)
-
-                    if temp_f_score < f_score[childCell]:
-                        aPath[childCell] = currCell
-                        g_score[childCell] = temp_g_score
-                        f_score[childCell] = temp_f_score
-                        open_set.put((f_score[childCell], childCell))
-
-    path = []
-    curr = end_position
-    while curr != start_position:
-        path.append(curr)
-        try:
-            curr = aPath[curr]
-        except KeyError:
-            message = "No path found, click OK to continue"
-            show_mac_alert(message)
-            return None
-    path.append(start_position)
-    path.reverse()
-    return path
+# a-star section
+# def h(cell1, cell2):
+#     x1, y1 = cell1
+#     x2, y2 = cell2
+#
+#     return abs(x1 - x2) + abs(y1 - y2)
+#
+#
+# def aStar():
+#     grid = create_grid()
+#     g_score = {cell: float('inf') for cell in grid}
+#     g_score[start_position] = 0
+#     f_score = {cell: float('inf') for cell in grid}
+#     f_score[start_position] = h(start_position, end_position)
+#
+#     open_set = PriorityQueue()
+#     open_set.put((f_score[start_position], start_position))
+#     aPath = {}
+#
+#     while not open_set.empty():
+#         _, currCell = open_set.get()
+#         if currCell == end_position:
+#             break
+#
+#         for d in 'ESNW':
+#             if walls[currCell][d] == 0:
+#                 if d == 'S':
+#                     childCell = (currCell[0], currCell[1] + 1)
+#                 elif d == 'N':
+#                     childCell = (currCell[0], currCell[1] - 1)
+#                 elif d == 'W':
+#                     childCell = (currCell[0] - 1, currCell[1])
+#                 elif d == 'E':
+#                     childCell = (currCell[0] + 1, currCell[1])
+#
+#                 if 0 <= childCell[0] < columns and 0 <= childCell[1] < rows:
+#                     temp_g_score = g_score[currCell] + 1
+#                     temp_f_score = temp_g_score + h(childCell, end_position)
+#
+#                     if temp_f_score < f_score[childCell]:
+#                         aPath[childCell] = currCell
+#                         g_score[childCell] = temp_g_score
+#                         f_score[childCell] = temp_f_score
+#                         open_set.put((f_score[childCell], childCell))
+#
+#     path = []
+#     curr = end_position
+#     while curr != start_position:
+#         path.append(curr)
+#         try:
+#             curr = aPath[curr]
+#         except KeyError:
+#             message = "No path found, click OK to continue"
+#             show_mac_alert(message)
+#             return None
+#     path.append(start_position)
+#     path.reverse()
+#     return path
 
 
 # when a line is clicked, change the color of the line and add it to the walls list
@@ -206,18 +217,18 @@ def clear():
 
 
 def solve_maze():
-    global start_position, end_position, rows, columns,start_mode, end_mode, walls, maze_root, start_placed, end_placed
+    global start_position, end_position, rows, columns, start_mode, end_mode, walls, maze_root, start_placed, end_placed
 
     if start_position is None or end_position is None:
         message = "Please place start and end point, click OK to continue"
         show_mac_alert(message)
 
-    path = aStar()
+    # path = aStar()
+    path = prolog_aStar()
     # if no path is found, do not create the result maze, stay on the maze setup screen
     if path is not None:
         maze_root.destroy()
         rm.resultMaze(rows, columns, start_position, end_position, walls, path)
-
 
 
 # main function to create the maze setup screen
