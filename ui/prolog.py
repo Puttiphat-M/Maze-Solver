@@ -3,11 +3,11 @@ import subprocess
 
 def run_prolog_query(query):
     prolog_process = subprocess.Popen(
-        ['swipl', '-q', '-s', 'a_star.pl'],  # Use 'swipl' and consult the Prolog file
-        stdin=subprocess.PIPE,  # Allow Python to write to Prolog's stdin
-        stdout=subprocess.PIPE,  # Capture Prolog's stdout
-        stderr=subprocess.PIPE,  # Capture Prolog's stderr
-        universal_newlines=True,  # Use text mode for communication
+        ['swipl', '-q', '-s', 'aStar.pl'],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        universal_newlines=True,
     )
 
     prolog_process.stdin.write(query)
@@ -17,9 +17,16 @@ def run_prolog_query(query):
     prolog_process.stdin.close()
     prolog_process.wait()
 
-    # Parse the path from the output
-    path = [tuple(map(int, p.split(','))) for p in prolog_output.strip().split()]
-
-    return path
+    return prolog_output
 
 
+if __name__ == '__main__':
+    grid = [(i, j) for i in range(0, 7) for j in range(0, 7)]
+    walls = {cell: {'E': 0, 'W': 0, 'N': 0, 'S': 0} for cell in grid}
+    # Query to run A* algorithm with parameters
+    prolog_query = f"a_star({grid}, {(1, 1)}, {(3, 3)}, {walls}, Path).\n"
+
+    # Run the Prolog query
+    output = run_prolog_query(prolog_query)
+
+    print(output)

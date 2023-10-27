@@ -1,76 +1,79 @@
+a_star(Grid, Start, Goal, Walls, Path) :-
+    % Initialize the open and closed lists.
+    Open = [[0, Start]],
+    Closed = [].
 
-h(cell(X1, Y1), cell(X2, Y2), H) :-
-    H is abs(X1 - X2) + abs(Y1 - Y2).
+    % Loop until the goal node is found or the open list is empty.
+    loop(Open, Closed, Walls, Goal, Path).
 
+loop([Cost, Current | Open], Closed, Walls, Goal, Path) :-
+    % Check if the current node is the goal node.
+    if (Current = Goal) then
+        % Path found!
+        get_path(Path, Current, Start).
+    else
+        % Expand the current node.
+        expand(Current, Walls, Grid, Successors).
 
-a_star(Grid, Start, End, Walls, Path) :-
+        % Add the successors to the open list if they are not already in the open or closed lists.
+        for (Successor in Successors) do
+            if (not member(Successor, Open) and not member(Successor, Closed)) then
+                insert(Open, [Cost + 1, Successor]).
+            end.
+        end.
 
-    initialize_scores(Grid, Start, GScore, FScore),
+        % Move the current node to the closed list.
+        remove(Open, Current, Open1).
+        append(Closed, [Current], Closed1).
 
-    open_set_priority_queue([fscore(Start, FScore)], OpenSet),
-    a_star_helper(Grid, Start, End, Walls, GScore, FScore, OpenSet, [], Path).
+        % Recursively loop until the goal node is found or the open list is empty.
+        loop(Open1, Closed1, Walls, Goal, Path).
 
+expand(Node, Walls, Grid, Successors) :-
+    % Get the coordinates of the current node.
+    (X, Y) = Node.
 
-a_star_helper(_, End, End, _, _, _, Acc, Acc).
+    % Generate the possible successor nodes.
+    for (Direction in ['E', 'W', 'N', 'S']) do
+        % Check if the successor node is within the bounds of the grid.
+        if ((X + 1 <= 6 and Direction = 'E') or
+            (X - 1 >= 0 and Direction = 'W') or
+            (Y + 1 <= 6 and Direction = 'N') or
+            (Y - 1 >= 0 and Direction = 'S')) then
+            % Check if the successor node is a wall.
+            if (Walls[Node][Direction] = 0 or Grid[Node][Direction] = 0) then
+                % The successor node is either a wall or an invalid space, so do not add it to the list of successors.
+            else
+                % The successor node is not a wall and is a valid space, so add it to the list of successors.
+                append(Successors, [X + dx(Direction), Y + dy(Direction)]).
+            end.
+        end.
+    end.
 
+dx(Direction) :-
+    if (Direction = 'E') then
+        1.
+    else if (Direction = 'W') then
+        -1.
+    else
+        0.
 
-a_star_helper(Grid, CurrCell, End, Walls, GScore, FScore, OpenSet, Acc, Path) :-
+dy(Direction) :-
+    if (Direction = 'N') then
+        1.
+    else if (Direction = 'S') then
+        -1.
+    else
+        0.
 
-    find_neighbors(Grid, CurrCell, Walls, Neighbors),
+get_path(Path, Goal, Start) :-
+    if (Goal = Start) then
+        Path = [Goal].
+    else
+        % Find the parent of the goal node.
+        (Parent, _) = member(Goal, Open),
+        remove(Open, Parent, Open1),
 
-    update_scores(CurrCell, End, Neighbors, GScore, FScore, OpenSet, NewOpenSet),
-
-    select(fscore(NextCell, _), NewOpenSet, UpdatedOpenSet),
-
-    a_star_helper(Grid, NextCell, End, Walls, GScore, FScore, UpdatedOpenSet, [NextCell|Acc], Path).
-
-
-initialize_scores(Grid, Start, GScore, FScore) :-
-    findall(cell(X, Y), member(row(X, Y, _), Grid), Cells),
-    maplist(init_score(GScore), Cells, [inf|_]),
-    h(Start, End, H),
-    maplist(init_score(FScore, H), Cells, [inf|_]).
-
-init_score(Dict, Key, Value) :- Dict =.. [Name, Key, Value], call(Name).
-
-
-find_neighbors(Grid, cell(X, Y), Walls, Neighbors) :-
-    findall(NextCell, (
-        member(d(Direction, NextCell), [n(cell(X, Y), N), e(cell(X, Y), E), s(cell(X, Y), S), w(cell(X, Y), W)]),
-        \+ member(row(N, E, S, W), Grid),
-        \+ member(d(Direction, NextCell), Walls)
-    ), Neighbors).
-
-
-update_scores(CurrCell, End, Neighbors, GScore, FScore, OpenSet, UpdatedOpenSet) :-
-    maplist(update_score(CurrCell, End, GScore, FScore, OpenSet), Neighbors, UpdatedOpenSet).
-
-
-update_score(CurrCell, End, GScore, FScore, OpenSet, NextCell, fscore(NextCell, NewFScore)) :-
-    g_score(CurrCell, NextCell, G),
-    NewG is G + g_score(CurrCell),
-    get_f_score(NextCell, FScore, OldFScore),
-    NewFScore is NewG + h(NextCell, End),
-    (member(fscore(NextCell, _), OpenSet) ->
-        replace(open_set_priority_queue, fscore(NextCell, OldFScore), fscore(NextCell, NewFScore), OpenSet)
-    ;   append([fscore(NextCell, NewFScore)], OpenSet, UpdatedOpenSet)
-    ).
-
-
-g_score(CurrCell, NextCell, G) :-
-    h(CurrCell, NextCell, H),
-    G is 1 + H.
-
-
-get_f_score(Cell, FScore, Value) :-
-    FScore =.. [fscore, Cell, Value].
-
-
-reconstruct_path(Start, Acc, Path) :-
-    reverse([Start|Acc], Path).
-
-
-print_path([]).
-print_path([cell(X,Y)|T]) :-
-    format("path(~w,~w) ", [X, Y]),
-    print_path(T).
+        % Recursively get the path from the parent to the start node.
+        append([Parent], Path, NewPath),
+        get_path(NewPath, Parent, Start).
