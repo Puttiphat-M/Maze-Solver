@@ -1,5 +1,5 @@
 import tkinter as tk
-from prolog import run_prolog_query
+from prolog import *
 from tkmacosx import Button, CircleButton
 import selectionUI as selection
 import resultMaze as rm
@@ -43,13 +43,17 @@ def initialise_walls():
 def prolog_aStar():
     global start_position, end_position, walls
     grid = create_grid()
-    # Query to run A* algorithm with parameters
-    prolog_query = f"a_star({grid}, {start_position}, {end_position}, {walls}, Path).\n"
+    # Convert walls to Prolog predicates
+    convert_walls_to_prolog(walls)
+    # Convert cells to Prolog predicates
+    convert_grid_to_prolog(grid)
+    # Find the shortest path
+    query = f'a_star({start_position}, {end_position}, Path, Cost)'
+    result = list(prolog.query(query))
 
-    # Run the Prolog query
-    output = run_prolog_query(prolog_query)
+    print(result)
+    return result
 
-    return output
 
 # a-star section
 # def h(cell1, cell2):
@@ -150,23 +154,21 @@ def on_line_click(tag, event):
 
 
 def place_start():
-    global start_mode, end_mode, start_placed, end_placed
+    global start_mode, end_mode
     if not start_placed:
         start_mode = True
         end_mode = False
-        start_placed = True
 
 
 def place_end():
-    global start_mode, end_mode, start_placed, end_placed
+    global start_mode, end_mode
     if not end_placed:
         end_mode = True
         start_mode = False
-        end_placed = True
 
 
 def on_cell_click(event):
-    global start_mode, end_mode, start_position, end_position, canvas
+    global start_mode, end_mode, start_position, end_position, canvas, start_placed, end_placed
     x_center = (event.x // (868 // columns)) * (868 // columns) + (868 // (2 * columns))
     y_center = (event.y // (560 // rows)) * (560 // rows) + (560 // (2 * rows))
     if start_mode:
@@ -174,15 +176,17 @@ def on_cell_click(event):
         canvas.create_oval(x_center - 15, y_center - 15, x_center + 15, y_center + 15, fill="green", outline="green")
         start_position = (x_center, y_center)
         start_mode = False
+        start_placed = True
         start_position = int((start_position[0] - (868 // (2 * columns))) / (868 // columns)), int(
             (start_position[1] - (560 // (2 * rows))) / (560 // rows))
     elif end_mode:
         # Calculate the center of the cell
         canvas.create_oval(x_center - 15, y_center - 15, x_center + 15, y_center + 15, fill="red", outline="red")
         end_position = (x_center, y_center)
-        end_mode = False
         end_position = int((end_position[0] - (868 // (2 * columns))) / (868 // columns)), int(
             (end_position[1] - (560 // (2 * rows))) / (560 // rows))
+        end_mode = False
+        end_placed = True
 
 
 # go back to the selection screen

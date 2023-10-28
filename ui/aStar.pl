@@ -1,79 +1,68 @@
-a_star(Grid, Start, Goal, Walls, Path) :-
-    % Initialize the open and closed lists.
-    Open = [[0, Start]],
-    Closed = [].
+% Define the heuristic function (Manhattan distance)
+h((X1, Y1), (X2, Y2), H) :-
+    write('Calculating heuristic for '), write(cell(X1, Y1)), write(' and '), write(cell(X2, Y2)), nl,
+    H is abs(X1 - X2) + abs(Y1 - Y2).
 
-    % Loop until the goal node is found or the open list is empty.
-    loop(Open, Closed, Walls, Goal, Path).
+% Define the A* algorithm
+a_star(Start, End, Path, Cost) :-
+    g_score(Start, 0, Start, End, [], Path, Cost).
 
-loop([Cost, Current | Open], Closed, Walls, Goal, Path) :-
-    % Check if the current node is the goal node.
-    if (Current = Goal) then
-        % Path found!
-        get_path(Path, Current, Start).
-    else
-        % Expand the current node.
-        expand(Current, Walls, Grid, Successors).
+g_score(Current, G, _, _, Visited, Path, Cost) :-
+    member(Current, Visited),
+    !,
+    Path = [],
+    Cost = G, %0
+    write('Already visited '), write(Current), nl.
 
-        % Add the successors to the open list if they are not already in the open or closed lists.
-        for (Successor in Successors) do
-            if (not member(Successor, Open) and not member(Successor, Closed)) then
-                insert(Open, [Cost + 1, Successor]).
-            end.
-        end.
+g_score(Current, G, _, Current, _, [Current], G) :-
+    !,
+    write('Reached goal at '), write(Current), nl.
 
-        % Move the current node to the closed list.
-        remove(Open, Current, Open1).
-        append(Closed, [Current], Closed1).
+g_score(Current, G, Start, End, Visited, Path, Cost) :-
+    findall(Neighbor, valid_neighbor(Current, Neighbor), Neighbors),
+    list_to_set(Neighbors, UniqueNeighbors),
+    write('Neighbors: '), write(UniqueNeighbors), nl,
+    best_neighbor(UniqueNeighbors, Start, End, G, BestNeighbor, BestNeighborCost),
+    write('Best neighbor: '), write(BestNeighbor), write(' with cost '), write(BestNeighborCost), nl,
+    NewG is G + 1,
+    g_score(BestNeighbor, NewG, Start, End, [Current|Visited], RestOfPath, RestOfCost),
+    append([Current], RestOfPath, Path),
+    Cost is BestNeighborCost + RestOfCost.
 
-        % Recursively loop until the goal node is found or the open list is empty.
-        loop(Open1, Closed1, Walls, Goal, Path).
+valid_neighbor(Current, Neighbor) :-
+    neighbor(Current, Neighbor),
+    \+ wall_between(Current, Neighbor),
+    \+ member(Neighbor, Current),
+    write('Valid neighbor: '), write(Neighbor), nl.
 
-expand(Node, Walls, Grid, Successors) :-
-    % Get the coordinates of the current node.
-    (X, Y) = Node.
+neighbor((X, Y), (X, Y1)) :- Y1 is Y + 1, cell(_, Y1).
+neighbor((X, Y), (X, Y1)) :- Y1 is Y - 1, cell(_, Y1).
+neighbor((X, Y), (X1, Y)) :- X1 is X + 1, cell(X1, _).
+neighbor((X, Y), (X1, Y)) :- X1 is X - 1, cell(X1, _).
 
-    % Generate the possible successor nodes.
-    for (Direction in ['E', 'W', 'N', 'S']) do
-        % Check if the successor node is within the bounds of the grid.
-        if ((X + 1 <= 6 and Direction = 'E') or
-            (X - 1 >= 0 and Direction = 'W') or
-            (Y + 1 <= 6 and Direction = 'N') or
-            (Y - 1 >= 0 and Direction = 'S')) then
-            % Check if the successor node is a wall.
-            if (Walls[Node][Direction] = 0 or Grid[Node][Direction] = 0) then
-                % The successor node is either a wall or an invalid space, so do not add it to the list of successors.
-            else
-                % The successor node is not a wall and is a valid space, so add it to the list of successors.
-                append(Successors, [X + dx(Direction), Y + dy(Direction)]).
-            end.
-        end.
-    end.
+wall_between((X, Y), (X, Y1)) :-
+    Y < Y1,
+    (wall(X, Y, s, 1) ; wall(X, Y1, n, 1)).
 
-dx(Direction) :-
-    if (Direction = 'E') then
-        1.
-    else if (Direction = 'W') then
-        -1.
-    else
-        0.
+wall_between((X, Y), (X, Y1)) :-
+    Y > Y1,
+    (wall(X, Y, n, 1) ; wall(X, Y1, s, 1)).
 
-dy(Direction) :-
-    if (Direction = 'N') then
-        1.
-    else if (Direction = 'S') then
-        -1.
-    else
-        0.
+wall_between((X, Y), (X1, Y)) :-
+    X < X1,
+    (wall(X, Y, e, 1) ; wall(X1, Y, w, 1)).
 
-get_path(Path, Goal, Start) :-
-    if (Goal = Start) then
-        Path = [Goal].
-    else
-        % Find the parent of the goal node.
-        (Parent, _) = member(Goal, Open),
-        remove(Open, Parent, Open1),
+wall_between((X, Y), (X1, Y)) :-
+    X > X1,
+    (wall(X, Y, w, 1) ; wall(X1, Y, e, 1)).
 
-        % Recursively get the path from the parent to the start node.
-        append([Parent], Path, NewPath),
-        get_path(NewPath, Parent, Start).
+best_neighbor([Neighbor], _, _, G, Neighbor, G).
+best_neighbor([Neighbor1, Neighbor2|Rest], Start, End, G, BestNeighbor, BestNeighborCost) :-
+    write('Best neighbor: '), write(Neighbor1), write(' or '), write(Neighbor2), nl,
+    write('End: '), write(End), nl,
+    h(Neighbor1, End, H1),
+    h(Neighbor2, End, H2),
+    F1 is G + H1,
+    F2 is G + H2,
+    (F1 < F2 -> best_neighbor([Neighbor1|Rest], Start, End, G, BestNeighbor, BestNeighborCost);
+               best_neighbor([Neighbor2|Rest], Start, End, G, BestNeighbor, BestNeighborCost)).
