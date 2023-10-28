@@ -51,8 +51,15 @@ def prolog_aStar():
     query = f'a_star({start_position}, {end_position}, Path, Cost)'
     result = list(prolog.query(query))
 
-    print(result)
-    return result
+    # remove , and ' from the string
+    path = str(result[0]['Path']).replace("'", '').replace(", ,", ',')
+    # remove the first ,
+    path = path[2:]
+    # add [ to the start
+    path = '[' + path
+    # make path into a list of tuples
+    path = eval(path)
+    return path
 
 
 # a-star section
