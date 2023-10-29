@@ -59,7 +59,7 @@ def prolog_aStar():
     path = '[' + path
     # make path into a list of tuples
     path = eval(path)
-    retract_all_walls()
+    retract_all_walls(walls)
     return path
 
 

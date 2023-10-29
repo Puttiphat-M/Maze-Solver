@@ -31,29 +31,23 @@ g_score(Current, G, Start, End, Visited, Path, Cost) :-
 
 valid_neighbor(Current, Neighbor) :-
     neighbor(Current, Neighbor),
-    write('Neighbor: '), write(Neighbor), nl,
-    \+ wall_between(Current, Neighbor),
-    write('Valid neighbor: '), write(Neighbor), nl.
+    \+ wall_between(Current, Neighbor).
 
 wall_between((X, Y), (X, Y1)) :-
     Y < Y1,
-    (wall(X, Y, s, 1) , wall(X, Y1, n, 1)),
-    write('Wall between sn '), write((X, Y)), write(' and '), write((X, Y1)), nl.
+    (wall(X, Y, s, 1) , wall(X, Y1, n, 1)).
 
 wall_between((X, Y), (X, Y1)) :-
     Y > Y1,
-    (wall(X, Y, n, 1) , wall(X, Y1, s, 1)),
-    write('Wall between ns'), write((X, Y)), write(' and '), write((X, Y1)), nl.
+    (wall(X, Y, n, 1) , wall(X, Y1, s, 1)).
 
 wall_between((X, Y), (X1, Y)) :-
     X < X1,
-    (wall(X, Y, e, 1) , wall(X1, Y, w, 1)),
-    write('Wall between ew'), write((X, Y)), write(' and '), write((X1, Y)), nl.
+    (wall(X, Y, e, 1) , wall(X1, Y, w, 1)).
 
 wall_between((X, Y), (X1, Y)) :-
     X > X1,
-    (wall(X, Y, w, 1) , wall(X1, Y, e, 1)),
-    write('Wall between we'), write((X, Y)), write(' and '), write((X1, Y)), nl.
+    (wall(X, Y, w, 1) , wall(X1, Y, e, 1)).
 
 neighbor((X, Y), (X, Y1)) :- Y1 is Y + 1, cell(_, Y1).
 neighbor((X, Y), (X, Y1)) :- Y1 is Y - 1, cell(_, Y1).
@@ -61,12 +55,24 @@ neighbor((X, Y), (X1, Y)) :- X1 is X + 1, cell(X1, _).
 neighbor((X, Y), (X1, Y)) :- X1 is X - 1, cell(X1, _).
 
 best_neighbor([Neighbor], _, _, G, Neighbor, G).
+
 best_neighbor([Neighbor1, Neighbor2|Rest], Start, End, G, BestNeighbor, BestNeighborCost) :-
-    write('Best neighbor: '), write(Neighbor1), write(' or '), write(Neighbor2), nl,
-    write('End: '), write(End), nl,
     h(Neighbor1, End, H1),
     h(Neighbor2, End, H2),
     F1 is G + H1,
     F2 is G + H2,
-    (F1 < F2 -> best_neighbor([Neighbor1|Rest], Start, End, G, BestNeighbor, BestNeighborCost);
-               best_neighbor([Neighbor2|Rest], Start, End, G, BestNeighbor, BestNeighborCost)).
+    write('F1: '), write(F1), write(' F2: '), write(F2), nl,
+
+    (F1 < F2 ->
+        best_neighbor([Neighbor1|Rest], Start, End, G, BestNeighbor, BestNeighborCost);
+        (F2 < F1 ->
+            best_neighbor([Neighbor2|Rest], Start, End, G, BestNeighbor, BestNeighborCost);
+            (F1 = F2 ->
+                (member(Neighbor1, Rest) ->
+                    best_neighbor([Neighbor1|Rest], Start, End, G, BestNeighbor, BestNeighborCost);
+                    best_neighbor([Neighbor2|Rest], Start, End, G, BestNeighbor, BestNeighborCost)
+                )
+            )
+        )
+    ).
+

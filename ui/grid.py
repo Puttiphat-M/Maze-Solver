@@ -12,9 +12,9 @@ def draw_grid(root, tk, rows, columns, column_cell, row_cell):
             y2 = y1 + row_cell
 
             # Create the tags for each side
-            canvas.create_line(x1, y1, x2, y1, fill="#CCCCCC", tags=f"N_{i}_{j}")
-            canvas.create_line(x1, y1, x1, y2, fill="#CCCCCC", tags=f"W_{i}_{j}")
-            canvas.create_line(x2, y1, x2, y2, fill="#CCCCCC", tags=f"E_{i}_{j}")
-            canvas.create_line(x1, y2, x2, y2, fill="#CCCCCC", tags=f"S_{i}_{j}")
+            canvas.create_line(x1, y1, x2, y1, fill="#CCCCCC", tags=f"n_{i}_{j}")
+            canvas.create_line(x1, y1, x1, y2, fill="#CCCCCC", tags=f"w_{i}_{j}")
+            canvas.create_line(x2, y1, x2, y2, fill="#CCCCCC", tags=f"e_{i}_{j}")
+            canvas.create_line(x1, y2, x2, y2, fill="#CCCCCC", tags=f"s_{i}_{j}")
 
     return canvas

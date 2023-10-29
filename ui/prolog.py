@@ -11,10 +11,10 @@ def convert_walls_to_prolog(walls):
     for cell, directions in walls.items():
         for direction, value in directions.items():
             prolog.assertz(f'wall({cell[0]}, {cell[1]}, {direction}, {value})')
-            print(f'wall({cell[0]}, {cell[1]}, {direction}, {value})')
+            # print(f'wall({cell[0]}, {cell[1]}, {direction}, {value})')
 
 
-def retract_all_walls():
+def retract_all_walls(walls):
     for cell, directions in walls.items():
         for direction, value in directions.items():
             prolog.retract(f'wall({cell[0]}, {cell[1]}, {direction}, {value})')
@@ -51,12 +51,12 @@ walls = {
     (2, 1): {'e': 0, 'w': 0, 'n': 0, 's': 0},
     (2, 2): {'e': 0, 'w': 0, 'n': 0, 's': 0},
     (2, 3): {'e': 0, 'w': 0, 'n': 0, 's': 0},
-    (2, 4): {'e': 0, 'w': 0, 'n': 0, 's': 0},
+    (2, 4): {'e': 1, 'w': 0, 'n': 0, 's': 0},
     (2, 5): {'e': 0, 'w': 0, 'n': 0, 's': 0},
     (3, 1): {'e': 0, 'w': 0, 'n': 0, 's': 0},
     (3, 2): {'e': 0, 'w': 0, 'n': 0, 's': 0},
     (3, 3): {'e': 0, 'w': 0, 'n': 0, 's': 0},
-    (3, 4): {'e': 0, 'w': 0, 'n': 0, 's': 0},
+    (3, 4): {'e': 0, 'w': 1, 'n': 0, 's': 0},
     (3, 5): {'e': 0, 'w': 0, 'n': 0, 's': 0},
     (4, 1): {'e': 0, 'w': 0, 'n': 0, 's': 0},
     (4, 2): {'e': 0, 'w': 0, 'n': 0, 's': 0},
@@ -74,8 +74,8 @@ convert_walls_to_prolog(walls)
 convert_grid_to_prolog(grid)
 
 # Example start and end positions
-start_position = (1, 3)
-end_position = (3, 1)
+start_position = (1, 4)
+end_position = (4, 4)
 
 # Find the shortest path
 query = f'a_star({start_position}, {end_position}, Path, Cost)'
