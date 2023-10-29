@@ -7,19 +7,12 @@ h((X1, Y1), (X2, Y2), H) :-
 a_star(Start, End, Path, Cost) :-
     g_score(Start, 0, Start, End, [], Path, Cost).
 
-g_score(Current, G, _, _, Visited, Path, Cost) :-
-    member(Current, Visited),
-    !,
-    Path = [],
-    Cost = G, %0
-    write('Already visited '), write(Current), nl.
-
-g_score(Current, G, _, Current, _, [Current], G) :-
+g_score(Current, G, _, Current, Visited, [Current], G) :-
     !,
     write('Reached goal at '), write(Current), nl.
 
 g_score(Current, G, Start, End, Visited, Path, Cost) :-
-    findall(Neighbor, valid_neighbor(Current, Neighbor), Neighbors),
+    findall(Neighbor, valid_unvisited_neighbor(Current, Visited, Neighbor), Neighbors),
     list_to_set(Neighbors, UniqueNeighbors),
     write('Neighbors: '), write(UniqueNeighbors), nl,
     best_neighbor(UniqueNeighbors, Start, End, G, BestNeighbor, BestNeighborCost),
@@ -28,6 +21,11 @@ g_score(Current, G, Start, End, Visited, Path, Cost) :-
     g_score(BestNeighbor, NewG, Start, End, [Current|Visited], RestOfPath, RestOfCost),
     append([Current], RestOfPath, Path),
     Cost is BestNeighborCost + RestOfCost.
+
+valid_unvisited_neighbor(Current, Visited, Neighbor) :-
+    neighbor(Current, Neighbor),
+    \+ member(Neighbor, Visited),
+    \+ wall_between(Current, Neighbor).
 
 valid_neighbor(Current, Neighbor) :-
     neighbor(Current, Neighbor),
@@ -55,24 +53,12 @@ neighbor((X, Y), (X1, Y)) :- X1 is X + 1, cell(X1, _).
 neighbor((X, Y), (X1, Y)) :- X1 is X - 1, cell(X1, _).
 
 best_neighbor([Neighbor], _, _, G, Neighbor, G).
-
 best_neighbor([Neighbor1, Neighbor2|Rest], Start, End, G, BestNeighbor, BestNeighborCost) :-
+    write('Neighbor1: '), write(Neighbor1), write(' Neighbor2: '), write(Neighbor2), nl,
     h(Neighbor1, End, H1),
     h(Neighbor2, End, H2),
     F1 is G + H1,
     F2 is G + H2,
     write('F1: '), write(F1), write(' F2: '), write(F2), nl,
-
-    (F1 < F2 ->
-        best_neighbor([Neighbor1|Rest], Start, End, G, BestNeighbor, BestNeighborCost);
-        (F2 < F1 ->
-            best_neighbor([Neighbor2|Rest], Start, End, G, BestNeighbor, BestNeighborCost);
-            (F1 = F2 ->
-                (member(Neighbor1, Rest) ->
-                    best_neighbor([Neighbor1|Rest], Start, End, G, BestNeighbor, BestNeighborCost);
-                    best_neighbor([Neighbor2|Rest], Start, End, G, BestNeighbor, BestNeighborCost)
-                )
-            )
-        )
-    ).
-
+    (F1 < F2 -> best_neighbor([Neighbor1|Rest], Start, End, G, BestNeighbor, BestNeighborCost);
+               best_neighbor([Neighbor2|Rest], Start, End, G, BestNeighbor, BestNeighborCost)).
