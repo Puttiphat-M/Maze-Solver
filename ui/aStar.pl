@@ -31,30 +31,34 @@ g_score(Current, G, Start, End, Visited, Path, Cost) :-
 
 valid_neighbor(Current, Neighbor) :-
     neighbor(Current, Neighbor),
+    write('Neighbor: '), write(Neighbor), nl,
     \+ wall_between(Current, Neighbor),
-    \+ member(Neighbor, Current),
     write('Valid neighbor: '), write(Neighbor), nl.
+
+wall_between((X, Y), (X, Y1)) :-
+    Y < Y1,
+    (wall(X, Y, s, 1) , wall(X, Y1, n, 1)),
+    write('Wall between sn '), write((X, Y)), write(' and '), write((X, Y1)), nl.
+
+wall_between((X, Y), (X, Y1)) :-
+    Y > Y1,
+    (wall(X, Y, n, 1) , wall(X, Y1, s, 1)),
+    write('Wall between ns'), write((X, Y)), write(' and '), write((X, Y1)), nl.
+
+wall_between((X, Y), (X1, Y)) :-
+    X < X1,
+    (wall(X, Y, e, 1) , wall(X1, Y, w, 1)),
+    write('Wall between ew'), write((X, Y)), write(' and '), write((X1, Y)), nl.
+
+wall_between((X, Y), (X1, Y)) :-
+    X > X1,
+    (wall(X, Y, w, 1) , wall(X1, Y, e, 1)),
+    write('Wall between we'), write((X, Y)), write(' and '), write((X1, Y)), nl.
 
 neighbor((X, Y), (X, Y1)) :- Y1 is Y + 1, cell(_, Y1).
 neighbor((X, Y), (X, Y1)) :- Y1 is Y - 1, cell(_, Y1).
 neighbor((X, Y), (X1, Y)) :- X1 is X + 1, cell(X1, _).
 neighbor((X, Y), (X1, Y)) :- X1 is X - 1, cell(X1, _).
-
-wall_between((X, Y), (X, Y1)) :-
-    Y < Y1,
-    (wall(X, Y, s, 1) ; wall(X, Y1, n, 1)).
-
-wall_between((X, Y), (X, Y1)) :-
-    Y > Y1,
-    (wall(X, Y, n, 1) ; wall(X, Y1, s, 1)).
-
-wall_between((X, Y), (X1, Y)) :-
-    X < X1,
-    (wall(X, Y, e, 1) ; wall(X1, Y, w, 1)).
-
-wall_between((X, Y), (X1, Y)) :-
-    X > X1,
-    (wall(X, Y, w, 1) ; wall(X1, Y, e, 1)).
 
 best_neighbor([Neighbor], _, _, G, Neighbor, G).
 best_neighbor([Neighbor1, Neighbor2|Rest], Start, End, G, BestNeighbor, BestNeighborCost) :-
