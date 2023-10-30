@@ -50,6 +50,7 @@ def prolog_aStar():
     # Find the shortest path
     query = f'a_star({start_position}, {end_position}, Path, Cost)'
     result = list(prolog.query(query))
+    print("result", result)
 
     # remove , and ' from the string
     path = str(result[0]['Path']).replace("'", '').replace(", ,", ',')
@@ -245,6 +246,8 @@ def solve_maze():
             message = "No path found, click OK to continue"
             show_mac_alert(message)
             retract_all_walls(walls)
+
+
 
 
 # main function to create the maze setup screen
