@@ -19,7 +19,8 @@ def convert_grid_to_prolog(grid):
         prolog.assertz(f'cell({cell[0]}, {cell[1]})')
         # print(f'cell({cell[0]}, {cell[1]})')
 
-def retract_all_walls():
+
+def retract_all_walls(walls):
     for cell, directions in walls.items():
         for direction, value in directions.items():
             prolog.retract(f'wall({cell[0]}, {cell[1]}, {direction}, {value})')
@@ -27,9 +28,6 @@ def retract_all_walls():
 
 def find_shortest_path(start_position, end_position):
     # Assert the walls in Prolog
-    for cell, directions in walls.items():
-        for direction, value in directions.items():
-            prolog.assertz(f'wall({cell[0]}, {cell[1]}, {direction}, {value})')
 
     # Call the find_shortest_path/4 predicate in Prolog
     query = f'find_shortest_path({start_position}, {end_position}, Path, Cost).'

@@ -37,7 +37,7 @@ def create_grid():
 def initialise_walls():
     global walls
     grid = create_grid()
-    walls = {cell: {'E': 0, 'W': 0, 'N': 0, 'S': 0} for cell in grid}
+    walls = {cell: {'e': 0, 'w': 0, 'n': 0, 's': 0} for cell in grid}
 
 
 def prolog_aStar():
@@ -50,6 +50,7 @@ def prolog_aStar():
     # Find the shortest path
     query = f'a_star({start_position}, {end_position}, Path, Cost)'
     result = list(prolog.query(query))
+    print("result", result)
 
     # remove , and ' from the string
     path = str(result[0]['Path']).replace("'", '').replace(", ,", ',')
@@ -59,7 +60,7 @@ def prolog_aStar():
     path = '[' + path
     # make path into a list of tuples
     path = eval(path)
-    retract_all_walls()
+    retract_all_walls(walls)
     return path
 
 
@@ -138,27 +139,27 @@ def on_line_click(tag, event):
     if line_color == "#CCCCCC":
         line.itemconfig(item, fill="red")
         walls[(i, j)][direction] = 1
-        if direction == 'E':
-            walls[(i + 1, j)]['W'] = 1
-        elif direction == 'W':
-            walls[(i - 1, j)]['E'] = 1
-        elif direction == 'N':
-            walls[(i, j - 1)]['S'] = 1
-        elif direction == 'S':
-            walls[(i, j + 1)]['N'] = 1
+        if direction == 'e':
+            walls[(i + 1, j)]['w'] = 1
+        elif direction == 'w':
+            walls[(i - 1, j)]['e'] = 1
+        elif direction == 'n':
+            walls[(i, j - 1)]['s'] = 1
+        elif direction == 's':
+            walls[(i, j + 1)]['n'] = 1
 
     # if the line is red, change it to grey and remove it from the walls list
     else:
         line.itemconfig(item, fill="#CCCCCC")
         walls[(i, j)][direction] = 0
-        if direction == 'E':
-            walls[(i + 1, j)]['W'] = 0
-        elif direction == 'W':
-            walls[(i - 1, j)]['E'] = 0
-        elif direction == 'N':
-            walls[(i, j - 1)]['S'] = 0
-        elif direction == 'S':
-            walls[(i, j + 1)]['N'] = 0
+        if direction == 'e':
+            walls[(i + 1, j)]['w'] = 0
+        elif direction == 'w':
+            walls[(i - 1, j)]['e'] = 0
+        elif direction == 'n':
+            walls[(i, j - 1)]['s'] = 0
+        elif direction == 's':
+            walls[(i, j + 1)]['n'] = 0
 
 
 def place_start():
@@ -234,13 +235,19 @@ def solve_maze():
     if start_position is None or end_position is None:
         message = "Please place start and end point, click OK to continue"
         show_mac_alert(message)
+    else:
+        # path = aStar()
+        try:
+            path = prolog_aStar()
+            if path is not []:
+                maze_root.destroy()
+                rm.resultMaze(rows, columns, start_position, end_position, walls, path)
+        except:
+            message = "No path found, click OK to continue"
+            show_mac_alert(message)
+            retract_all_walls(walls)
 
-    # path = aStar()
-    path = prolog_aStar()
-    # if no path is found, do not create the result maze, stay on the maze setup screen
-    if path is not None:
-        maze_root.destroy()
-        rm.resultMaze(rows, columns, start_position, end_position, walls, path)
+
 
 
 # main function to create the maze setup screen
@@ -289,10 +296,10 @@ def create_maze(row, column):
     # Bind click events to the direction
     for i in range(rows):
         for j in range(columns):
-            for direction in ["N", "W", "E", "S"]:
+            for direction in ["n", "w", "e", "s"]:
                 tag = f"{direction}_{i}_{j}"
-                if not ((direction == "N" and i == 0) or (direction == "W" and j == 0) or (
-                        direction == "E" and j == columns - 1) or (direction == "S" and i == rows - 1)):
+                if not ((direction == "n" and i == 0) or (direction == "w" and j == 0) or (
+                        direction == "e" and j == columns - 1) or (direction == "s" and i == rows - 1)):
                     canvas.tag_bind(tag, "<Button-1>", lambda event, tag=tag: on_line_click(tag, event))
 
     # pack the canvas and bind click events to the cells

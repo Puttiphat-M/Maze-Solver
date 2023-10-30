@@ -16,22 +16,22 @@ def back_to_selection():
 # function to get where to draw the line
 def get_line_coordinates(i, j, side, row_cell, column_cell):
     x1, y1, x2, y2 = 0, 0, 0, 0
-    if side == "N":
+    if side == "n":
         x1 = i * column_cell
         y1 = j * row_cell
         x2 = x1 + column_cell
         y2 = y1
-    elif side == "W":
+    elif side == "w":
         x1 = i * column_cell
         y1 = j * row_cell
         x2 = x1
         y2 = y1 + row_cell
-    elif side == "E":
+    elif side == "e":
         x1 = (i + 1) * column_cell
         y1 = j * row_cell
         x2 = x1
         y2 = y1 + row_cell
-    elif side == "S":
+    elif side == "s":
         x1 = i * column_cell
         y1 = (j + 1) * row_cell
         x2 = x1 + column_cell
