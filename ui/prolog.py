@@ -42,50 +42,50 @@ def find_shortest_path(start_position, end_position):
 
 
 # Example data
-walls = {
-    (1, 1): {'e': 0, 'w': 0, 'n': 0, 's': 0},
-    (1, 2): {'e': 0, 'w': 0, 'n': 0, 's': 0},
-    (1, 3): {'e': 0, 'w': 0, 'n': 0, 's': 0},
-    (1, 4): {'e': 0, 'w': 0, 'n': 0, 's': 0},
-    (1, 5): {'e': 0, 'w': 0, 'n': 0, 's': 0},
-    (2, 1): {'e': 0, 'w': 0, 'n': 0, 's': 0},
-    (2, 2): {'e': 0, 'w': 0, 'n': 0, 's': 0},
-    (2, 3): {'e': 0, 'w': 0, 'n': 0, 's': 0},
-    (2, 4): {'e': 1, 'w': 0, 'n': 0, 's': 0},
-    (2, 5): {'e': 0, 'w': 0, 'n': 0, 's': 0},
-    (3, 1): {'e': 0, 'w': 0, 'n': 0, 's': 0},
-    (3, 2): {'e': 0, 'w': 0, 'n': 0, 's': 0},
-    (3, 3): {'e': 0, 'w': 0, 'n': 0, 's': 0},
-    (3, 4): {'e': 0, 'w': 1, 'n': 0, 's': 0},
-    (3, 5): {'e': 0, 'w': 0, 'n': 0, 's': 0},
-    (4, 1): {'e': 0, 'w': 0, 'n': 0, 's': 0},
-    (4, 2): {'e': 0, 'w': 0, 'n': 0, 's': 0},
-    (4, 3): {'e': 0, 'w': 0, 'n': 0, 's': 0},
-    (4, 4): {'e': 0, 'w': 0, 'n': 0, 's': 0},
-    (4, 5): {'e': 0, 'w': 0, 'n': 0, 's': 0},
-    (5, 1): {'e': 0, 'w': 0, 'n': 0, 's': 0}
-}
-grid = [cell for cell in walls.keys()]
-
-# Convert walls to Prolog predicates
-convert_walls_to_prolog(walls)
-
-# Convert cells to Prolog predicates
-convert_grid_to_prolog(grid)
-
-# Example start and end positions
-start_position = (1, 4)
-end_position = (4, 4)
-
-# Find the shortest path
-query = f'a_star({start_position}, {end_position}, Path, Cost)'
-result = list(prolog.query(query))
-
-# Print the result
-if result:
-    path = result[0]['Path']
-    cost = result[0]['Cost']
-    print(f'Shortest path: {path}')
-    print(f'Cost: {cost}')
-else:
-    print('No path found')
+# walls = {
+#     (1, 1): {'e': 0, 'w': 0, 'n': 0, 's': 0},
+#     (1, 2): {'e': 0, 'w': 0, 'n': 0, 's': 0},
+#     (1, 3): {'e': 0, 'w': 0, 'n': 0, 's': 0},
+#     (1, 4): {'e': 0, 'w': 0, 'n': 0, 's': 0},
+#     (1, 5): {'e': 0, 'w': 0, 'n': 0, 's': 0},
+#     (2, 1): {'e': 0, 'w': 0, 'n': 0, 's': 0},
+#     (2, 2): {'e': 0, 'w': 0, 'n': 0, 's': 0},
+#     (2, 3): {'e': 0, 'w': 0, 'n': 0, 's': 0},
+#     (2, 4): {'e': 1, 'w': 0, 'n': 0, 's': 0},
+#     (2, 5): {'e': 0, 'w': 0, 'n': 0, 's': 0},
+#     (3, 1): {'e': 0, 'w': 0, 'n': 0, 's': 0},
+#     (3, 2): {'e': 0, 'w': 0, 'n': 0, 's': 0},
+#     (3, 3): {'e': 0, 'w': 0, 'n': 0, 's': 0},
+#     (3, 4): {'e': 0, 'w': 1, 'n': 0, 's': 0},
+#     (3, 5): {'e': 0, 'w': 0, 'n': 0, 's': 0},
+#     (4, 1): {'e': 0, 'w': 0, 'n': 0, 's': 0},
+#     (4, 2): {'e': 0, 'w': 0, 'n': 0, 's': 0},
+#     (4, 3): {'e': 0, 'w': 0, 'n': 0, 's': 0},
+#     (4, 4): {'e': 0, 'w': 0, 'n': 0, 's': 0},
+#     (4, 5): {'e': 0, 'w': 0, 'n': 0, 's': 0},
+#     (5, 1): {'e': 0, 'w': 0, 'n': 0, 's': 0}
+# }
+# grid = [cell for cell in walls.keys()]
+#
+# # Convert walls to Prolog predicates
+# convert_walls_to_prolog(walls)
+#
+# # Convert cells to Prolog predicates
+# convert_grid_to_prolog(grid)
+#
+# # Example start and end positions
+# start_position = (1, 4)
+# end_position = (4, 4)
+#
+# # Find the shortest path
+# query = f'a_star({start_position}, {end_position}, Path, Cost)'
+# result = list(prolog.query(query))
+#
+# # Print the result
+# if result:
+#     path = result[0]['Path']
+#     cost = result[0]['Cost']
+#     print(f'Shortest path: {path}')
+#     print(f'Cost: {cost}')
+# else:
+#     print('No path found')

@@ -234,13 +234,17 @@ def solve_maze():
     if start_position is None or end_position is None:
         message = "Please place start and end point, click OK to continue"
         show_mac_alert(message)
-
-    # path = aStar()
-    path = prolog_aStar()
-    # if no path is found, do not create the result maze, stay on the maze setup screen
-    if path is not None:
-        maze_root.destroy()
-        rm.resultMaze(rows, columns, start_position, end_position, walls, path)
+    else:
+        # path = aStar()
+        try:
+            path = prolog_aStar()
+            if path is not []:
+                maze_root.destroy()
+                rm.resultMaze(rows, columns, start_position, end_position, walls, path)
+        except:
+            message = "No path found, click OK to continue"
+            show_mac_alert(message)
+            retract_all_walls(walls)
 
 
 # main function to create the maze setup screen
