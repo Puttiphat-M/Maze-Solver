@@ -40,19 +40,6 @@ def initialise_walls():
     walls = {cell: {'e': 0, 'w': 0, 'n': 0, 's': 0} for cell in grid}
 
 
-def prolog_aStar():
-    global start_position, end_position, walls
-    result = find_shortest_path(start_position, end_position, walls, create_grid())
-    # remove , and ' from the string
-    path = str(result[0]['Path']).replace("'", '').replace(", ,", ',')
-    # remove the first ,
-    path = path[2:]
-    # add [ to the start
-    path = '[' + path
-    # make path into a list of tuples
-    path = eval(path)
-    return path
-
 # a-star section
 # def h(cell1, cell2):
 #     x1, y1 = cell1
@@ -227,7 +214,7 @@ def solve_maze():
     else:
         # path = aStar()
         try:
-            path = prolog_aStar()
+            path = find_shortest_path(start_position, end_position, walls, create_grid())
             if path is not []:
                 maze_root.destroy()
                 rm.resultMaze(rows, columns, start_position, end_position, walls, path)

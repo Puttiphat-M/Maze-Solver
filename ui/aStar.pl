@@ -1,5 +1,5 @@
 h((X1, Y1), (X2, Y2), H) :-
-    H is abs(X1 - X2) + abs(Y1 - Y2),
+    H is abs(X1 - X2) + abs(Y1 - Y2).
 
 has_wall(X, Y, D) :-
     wall(X, Y, D, 0).

@@ -30,15 +30,20 @@ def find_shortest_path(start_position, end_position, walls, grid):
     convert_walls_to_prolog(walls)
     convert_grid_to_prolog(grid)
 
-    query = f'find_shortest_path({start_position}, {end_position}, Path, Cost).'
+    query = f'a_star({start_position}, {end_position}, Path, Cost).'
     results = list(prolog.query(query))
 
     retract_all_walls(walls)
     # Process the results
     if results:
-        # Extract the path as a list of tuples
-        shortest_path = list(results[0]['Path'])
-        cost = results[0]['Cost']
-        return shortest_path, cost
+        path = str(results[0]['Path']).replace("'", '').replace(", ,", ',')
+        # remove the first ,
+        print(path)
+        path = path[2:]
+        # add [ to the start
+        path = '[' + path
+        # make path into a list of tuples
+        path = eval(path)
+        return path
     else:
         return None, None
