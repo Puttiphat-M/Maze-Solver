@@ -42,16 +42,7 @@ def initialise_walls():
 
 def prolog_aStar():
     global start_position, end_position, walls
-    grid = create_grid()
-    # Convert walls to Prolog predicates
-    convert_walls_to_prolog(walls)
-    # Convert cells to Prolog predicates
-    convert_grid_to_prolog(grid)
-    # Find the shortest path
-    query = f'a_star({start_position}, {end_position}, Path, Cost)'
-    result = list(prolog.query(query))
-    print("result", result)
-
+    result = find_shortest_path(start_position, end_position, walls, create_grid())
     # remove , and ' from the string
     path = str(result[0]['Path']).replace("'", '').replace(", ,", ',')
     # remove the first ,
@@ -60,9 +51,7 @@ def prolog_aStar():
     path = '[' + path
     # make path into a list of tuples
     path = eval(path)
-    retract_all_walls(walls)
     return path
-
 
 # a-star section
 # def h(cell1, cell2):
